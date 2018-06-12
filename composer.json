@@ -1,6 +1,6 @@
 {
   "name": "telstatic/rakan",
-  "description": "阿里云上传配套组件",
+  "description": "阿里云OSS配套插件",
   "type": "project",
   "license": "MIT",
   "authors": [
