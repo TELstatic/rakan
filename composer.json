@@ -1,0 +1,37 @@
+{
+  "name": "telstatic/rakan",
+  "description": "阿里云上传配套组件",
+  "type": "project",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "TELstatic",
+      "email": "telstatic@qq.com"
+    }
+  ],
+  "minimum-stability": "dev",
+  "require": {
+    "php": "^7.1",
+    "laravel/framework": "5.5.*",
+    "jacobcyl/ali-oss-storage": "~2.1.0",
+    "elfsundae/laravel-hashid": "^1.2"
+  },
+  "autoload": {
+    "psr-4": {
+      "TELstatic\\Rakan\\": "src/"
+    },
+    "files": [
+      "Helper/helpers.php"
+    ]
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "TELstatic\\Rakan\\RakanServiceProvider"
+      ],
+      "aliases": {
+        "Rakan": "TELstatic\\Rakan\\Facade"
+      }
+    }
+  }
+}
