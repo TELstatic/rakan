@@ -1,7 +1,7 @@
 {
   "name": "telstatic/rakan",
   "description": "阿里云OSS配套插件",
-  "type": "project",
+  "type": "library",
   "license": "MIT",
   "authors": [
     {
