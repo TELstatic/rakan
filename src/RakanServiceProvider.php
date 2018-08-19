@@ -13,8 +13,6 @@ class RakanServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        require "Helper/helpers.php";
-
         $this->publishes([
             __DIR__ . '/config/rakan.php' => config_path('rakan.php'),
         ]);
