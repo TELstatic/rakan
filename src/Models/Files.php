@@ -2,13 +2,11 @@
 
 namespace TELstatic\Rakan\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use TELstatic\Rakan\Events\FileCreated;
-use TELstatic\Rakan\Events\FileDeleted;
+use Jenssegers\Mongodb\Eloquent\Model;
 
 class Files extends Model
 {
-    protected $table = "rakan_file";
+    protected $table = "files";
 
     protected $guarded = [];
 
@@ -24,21 +22,15 @@ class Files extends Model
         return false;
     }
 
-
     /**
      * src 属性
      */
     public function getUrlAttribute()
     {
-        return config('rakan.alioss.host') . "/" . $this->path;
+        if ($this->type == 'file') {
+            return config('rakan.alioss.host') . "/" . $this->path;
+        } else {
+            return null;
+        }
     }
-
-    /**
-     * 触发事件 增减使用空间
-     */
-    protected $dispatchesEvents = [
-        'created' => FileCreated::class,
-        'deleted' => FileDeleted::class,
-    ];
-
 }

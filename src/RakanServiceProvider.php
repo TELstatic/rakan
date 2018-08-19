@@ -20,12 +20,6 @@ class RakanServiceProvider extends ServiceProvider
         ]);
 
         $this->mergeConfigFrom(__DIR__ . '/config/rakan.php', 'rakan');
-
-        $this->loadRoutesFrom(__DIR__ . '/routes.php');
-
-        $this->loadMigrationsFrom(__DIR__ . '/migrations');
-
-
     }
 
     /**
@@ -38,8 +32,5 @@ class RakanServiceProvider extends ServiceProvider
         $this->app->singleton('rakan', function ($app) {
             return new Rakan();
         });
-
-        $this->app->register('TELstatic\Rakan\EventServiceProvider');
-
     }
 }
