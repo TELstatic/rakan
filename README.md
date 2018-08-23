@@ -2,7 +2,7 @@
 
 ### 安装
 
-    composer require telstatic\rakan
+    composer require telstatic/rakan
 
 ### 使用
     
