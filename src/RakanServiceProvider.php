@@ -17,6 +17,8 @@ class RakanServiceProvider extends ServiceProvider
             __DIR__ . '/config/rakan.php' => config_path('rakan.php'),
         ]);
 
+        $this->loadRoutesFrom(__DIR__ . '/routes.php');
+
         $this->mergeConfigFrom(__DIR__ . '/config/rakan.php', 'rakan');
     }
 

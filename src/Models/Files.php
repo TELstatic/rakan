@@ -6,16 +6,18 @@ use Jenssegers\Mongodb\Eloquent\Model;
 
 class Files extends Model
 {
-    protected $table = "files";
+    protected $primaryKey = '_id';
+    protected $connection = 'mongodb';
+    protected $collection = 'files';
 
     protected $guarded = [];
 
     protected $appends = [
-        'checked', 'url'
+        'checked', 'url', 'order'
     ];
 
     /**
-     * 选中属性
+     * 选中状态
      */
     public function getCheckedAttribute()
     {
@@ -23,7 +25,7 @@ class Files extends Model
     }
 
     /**
-     * src 属性
+     * src
      */
     public function getUrlAttribute()
     {
@@ -33,4 +35,13 @@ class Files extends Model
             return null;
         }
     }
+
+    /**
+     * 排序
+     */
+    public function getOrderAttribute()
+    {
+        return 0;
+    }
+
 }
