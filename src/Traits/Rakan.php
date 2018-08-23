@@ -69,10 +69,6 @@ trait Rakan
         $where = [];
 
         $where[] = [
-            'pid', 0
-        ];
-
-        $where[] = [
             'name', 'Root',
         ];
 
@@ -84,7 +80,7 @@ trait Rakan
             'target_id', $this->id,
         ];
 
-        $files = Files::firstOrCreate($where, $data);
+        $files = Files::where($where)->firstOrCreate(['pid' => 0], $data);
 
         return $files;
     }
@@ -147,7 +143,7 @@ trait Rakan
 
         $childCount = Files::where($where)->count();
 
-        if ($childCount >= $this->max_folder) {
+        if ($childCount >= $this->max_width) {
             return [
                 'status' => 500,
                 'msg'    => '目录超出限制'

@@ -56,7 +56,7 @@
         }
         
         public function createFolder(Request $request){
-            return $this->user->createFolder($request->name,$request->pid);
+            return $this->user->createFolder($request->pid,$request->name);
         }
         
         public function deleteFiles(Request $request){
