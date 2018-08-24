@@ -13,7 +13,7 @@ class Files extends Model
     protected $guarded = [];
 
     protected $appends = [
-        'checked', 'url', 'order'
+        'checked', 'url', 'order', 'thumb'
     ];
 
     /**
@@ -30,7 +30,20 @@ class Files extends Model
     public function getUrlAttribute()
     {
         if ($this->type == 'file') {
-            return config('rakan.alioss.host') . "/" . $this->path;
+            return config('rakan.oss.host') . "/" . $this->path;
+        } else {
+            return null;
+        }
+    }
+
+    public function getThumbAttribute()
+    {
+        if ($this->type == 'file') {
+            if (config('rakan.oss.style.thumb')) {
+                return config('rakan.oss.host') . "/" . $this->path . '?x-oss-process=style/' . config('rakan.oss.style.thumb');
+            } else {
+                return config('rakan.oss.host') . "/" . $this->path;
+            }
         } else {
             return null;
         }

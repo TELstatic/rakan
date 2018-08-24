@@ -314,13 +314,14 @@ trait Rakan
         $accessKeyId = config('rakan.oss.access_key');
         $accessKeySecret = config('rakan.oss.secret_key');
         $host = config('rakan.oss.host');
-        $callbackUrl = config('website.ali.oss.callback');
+        $callbackUrl = route('rakan.callback');
 
         $callback_param = [
             'callbackUrl'      => $callbackUrl,
             'callbackBody'     => 'filename=${object}&size=${size}&mimeType=${mimeType}&height=${imageInfo.height}&width=${imageInfo.width}',
             'callbackBodyType' => "application/x-www-form-urlencoded",
         ];
+
         $callback_string = json_encode($callback_param);
         $base64_callback_body = base64_encode($callback_string);
 
@@ -331,11 +332,19 @@ trait Rakan
         $expiration = self::gmt_iso8601($end);
 
         $condition = [
-            0 => 'content-length-range',
-            1 => 0,
-            2 => 1048576000,
+            'content-length-range',
+            0,
+            1048576000,
         ];
         $conditions[] = $condition;
+
+        $start = [
+            'starts-with',
+            '$key',
+            $this->root()
+        ];
+
+        $conditions[] = $start;
 
         $arr = [
             'expiration' => $expiration,
@@ -353,7 +362,10 @@ trait Rakan
         $response['policy'] = $base64_policy;
         $response['signature'] = $signature;
         $response['expire'] = $expire;
-        $response['callback'] = $base64_callback_body;
+
+        if (config('app.env') != 'local') {
+            $response['callback'] = $base64_callback_body;
+        }
 
         return $response;
     }
