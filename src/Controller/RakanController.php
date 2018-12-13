@@ -13,18 +13,21 @@ class RakanController extends BaseController
      */
     public function saveFile(Request $request)
     {
-        $this->verify();
+        //非本地环境验证 合法性
+        if (config('app.env') !== 'local') {
+            $this->verify();
+        }
 
-        $fileInfo = pathinfo($request->filename);
+        $fileInfo = pathinfo($request->get('filename'));
 
         $folder = File::where(['path' => $fileInfo['dirname']])->firstOrFail();
 
         $data = [
-            'path'      => $request->filename,
-            'size'      => $request->size,
-            'width'     => $request->width,
-            'height'    => $request->height,
-            'ext'       => $request->mimeType,
+            'path'      => $request->get('filename'),
+            'size'      => $request->get('size', 1),
+            'width'     => $request->get('width', 0),
+            'height'    => $request->get('height', 0),
+            'ext'       => $request->get('mimeType'),
             'name'      => $fileInfo['basename'],
             'module'    => $folder->module,
             'target_id' => $folder->target_id,
@@ -36,7 +39,7 @@ class RakanController extends BaseController
         $bool = File::create($data);
 
         return response()->json([
-            'code' => $bool ? 200:500,
+            'status' => $bool ? 200 : 500,
         ]);
     }
 
@@ -75,7 +78,7 @@ class RakanController extends BaseController
         if ($pos === false) {
             $authStr = urldecode($path).'\n'.$auth['body'];
         } else {
-            $authStr = urldecode(substr($path, 0, $pos)) . substr($path, $pos, strlen($path) - $pos).'\n'.$auth['body'];
+            $authStr = urldecode(substr($path, 0, $pos)).substr($path, $pos, strlen($path) - $pos).'\n'.$auth['body'];
         }
 
         $ok = openssl_verify($authStr, $authorization, $pubKey, OPENSSL_ALGO_MD5);

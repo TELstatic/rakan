@@ -13,7 +13,7 @@ class CreateRakanFilesTable extends Migration
      */
     public function up()
     {
-        Schema::create(config('rankan.table.name'), function (Blueprint $table) {
+        Schema::create(config('rakan.table.name'), function (Blueprint $table) {
             $table->increments('id');
             $table->integer('target_id', false, true)->comment('模型ID');
             $table->integer('pid', false, true)->default(0)->comment('父目录id');
@@ -37,6 +37,6 @@ class CreateRakanFilesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists(config('rankan.table.name'));
+        Schema::dropIfExists(config('rakan.table.name'));
     }
 }

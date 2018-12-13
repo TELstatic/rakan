@@ -6,13 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class Rakan extends Model
 {
-    public $table;
-
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
 
-        $this->table = config('ranka.table.name');
+        $this->setTable(config('rakan.table.name'));
     }
 
     protected $guarded = [];
@@ -24,7 +22,7 @@ class Rakan extends Model
     public function getUrlAttribute()
     {
         if ($this->type === 'file') {
-            return config('rakan.oss.host') . $this->path;
+            return config('rakan.oss.host').$this->path;
         } else {
             return null;
         }

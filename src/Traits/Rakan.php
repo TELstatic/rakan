@@ -29,6 +29,10 @@ trait Rakan
         $this->endpoint = config('rakan.oss.endpoint');
         $this->bucket = config('rakan.oss.bucket');
 
+        $this->module = 'default';
+        $this->prefix = 'rakan';
+        $this->expire = '120';
+
         try {
             $this->client = new OssClient($this->accessKey, $this->accessSecret, $this->endpoint);
         } catch (OssException $exception) {
@@ -45,7 +49,7 @@ trait Rakan
     public function prefix($prefix = 'rakan')
     {
         $this->prefix = $prefix;
-        return $this->prefix;
+        return $this;
     }
 
     /**
@@ -54,7 +58,7 @@ trait Rakan
     public function module($module = 'default')
     {
         $this->module = $module;
-        return $this->module;
+        return $this;
     }
 
     /**
@@ -68,7 +72,7 @@ trait Rakan
         }
 
         $this->expire = config('rakan.oss.expire', 120);
-        return $this->expire;
+        return $this;
     }
 
     /**
@@ -76,7 +80,7 @@ trait Rakan
      */
     public function root()
     {
-        return $this->prefix().'/'.hashid_encode($this->id);
+        return $this->prefix.'/'.$this->module.'/'.hashid_encode($this->id);
     }
 
     /**
@@ -91,7 +95,7 @@ trait Rakan
             'pid'       => 0,
             'path'      => $path,
             'name'      => 'Root',
-            'module'    => $this->module(),
+            'module'    => $this->module,
             'target_id' => $this->id,
             'type'      => 'folder',
             'sort'      => 255,
@@ -104,7 +108,7 @@ trait Rakan
         ];
 
         $where[] = [
-            'module', $this->module(),
+            'module', $this->module,
         ];
 
         $where[] = [
@@ -124,7 +128,7 @@ trait Rakan
         $where = [];
 
         $where[] = [
-            'module', $this->module(),
+            'module', $this->module,
         ];
 
         $where[] = [
@@ -189,7 +193,7 @@ trait Rakan
             'pid'       => $parent->id,
             'path'      => $parent->path.'/'.$name,
             'name'      => $name,
-            'module'    => $this->module(),
+            'module'    => $parent->module,
             'target_id' => $this->id,
             'type'      => 'folder',
             'sort'      => 255,
@@ -238,7 +242,7 @@ trait Rakan
         ];
 
         $where[] = [
-            'module', $this->module(),
+            'module', $this->module,
         ];
 
         $folders = File::where($where)->where(['type' => 'folder'])->whereIn('id', $ids)->pluck('path');
@@ -307,7 +311,7 @@ trait Rakan
         $base64_callback_body = base64_encode($callback_string);
 
         $now = time();
-        $expire = $this->expire();
+        $expire = $this->expire;
 
         $end = $now + $expire;
         $expiration = self::gmt_iso8601($end);
