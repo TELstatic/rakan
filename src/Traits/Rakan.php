@@ -76,7 +76,7 @@ trait Rakan
      */
     public function root()
     {
-        return $this->prefix() . '/' . hashid_encode($this->id);
+        return $this->prefix().'/'.hashid_encode($this->id);
     }
 
     /**
@@ -187,7 +187,7 @@ trait Rakan
 
         $data = [
             'pid'       => $parent->id,
-            'path'      => $parent->path . '/' . $name,
+            'path'      => $parent->path.'/'.$name,
             'name'      => $name,
             'module'    => $this->module(),
             'target_id' => $this->id,
@@ -198,8 +198,8 @@ trait Rakan
         $bool = File::create($data);
 
         return [
-            'status' => $bool ? 200:500,
-            'msg'    => '目录创建' . $bool ? '成功':'失败',
+            'status' => $bool ? 200 : 500,
+            'msg'    => '目录创建'.$bool ? '成功' : '失败',
         ];
     }
 
@@ -211,8 +211,8 @@ trait Rakan
         $bool = $this->checkObject($path);
 
         return [
-            'status' => $bool ? 500:200,
-            'msg'    => $bool ? '文件已存在':'',
+            'status' => $bool ? 500 : 200,
+            'msg'    => $bool ? '文件已存在' : '',
         ];
     }
 
@@ -249,13 +249,13 @@ trait Rakan
             $whereFolder = [];
 
             $whereFolder[] = [
-                'path', 'like', $folder . '%',
+                'path', 'like', $folder.'%',
             ];
 
             if (File::where($whereFolder)->count() > 1) {
                 return [
                     'status' => 500,
-                    'msg'    => '目录' . $folder . '不为空',
+                    'msg'    => '目录'.$folder.'不为空',
                 ];
                 break;
             }
@@ -359,6 +359,6 @@ trait Rakan
         $pos = strpos($expiration, '+');
         $expiration = substr($expiration, 0, $pos);
 
-        return $expiration . 'Z';
+        return $expiration.'Z';
     }
 }
