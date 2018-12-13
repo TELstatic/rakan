@@ -2,14 +2,14 @@
 
 namespace TELstatic\Rakan\Controller;
 
-use TELstatic\Rakan\Models\Files;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as BaseController;
+use TELstatic\Rakan\Models\Rakan as File;
 
 class RakanController extends BaseController
 {
     /**
-     * 保存文件
+     * 保存文件.
      */
     public function saveFile(Request $request)
     {
@@ -17,7 +17,7 @@ class RakanController extends BaseController
 
         $fileInfo = pathinfo($request->filename);
 
-        $folder = Files::where(['path' => $fileInfo['dirname']])->firstOrFail();
+        $folder = File::where(['path' => $fileInfo['dirname']])->firstOrFail();
 
         $data = [
             'path'      => $request->filename,
@@ -30,24 +30,18 @@ class RakanController extends BaseController
             'target_id' => $folder->target_id,
             'pid'       => $folder->id,
             'sort'      => 0,
-            'type'      => 'file'
+            'type'      => 'file',
         ];
 
-        $bool = Files::create($data);
-
-        if ($bool) {
-            return response()->json([
-                'code' => 200
-            ]);
-        }
+        $bool = File::create($data);
 
         return response()->json([
-            'code' => 500
+            'code' => $bool ? 200:500,
         ]);
     }
 
     /**
-     * 验证合法性
+     * 验证合法性.
      */
     protected function verify()
     {
@@ -71,7 +65,7 @@ class RakanController extends BaseController
 
         $pubKey = file_get_contents($pubKeyUrl);
 
-        if ($pubKey == "") {
+        if ($pubKey == '') {
             abort(403);
         }
 
@@ -79,9 +73,9 @@ class RakanController extends BaseController
 
         $pos = strpos($path, '?');
         if ($pos === false) {
-            $authStr = urldecode($path) . "\n" . $auth['body'];
+            $authStr = urldecode($path).'\n'.$auth['body'];
         } else {
-            $authStr = urldecode(substr($path, 0, $pos)) . substr($path, $pos, strlen($path) - $pos) . "\n" . $auth['body'];
+            $authStr = urldecode(substr($path, 0, $pos)) . substr($path, $pos, strlen($path) - $pos).'\n'.$auth['body'];
         }
 
         $ok = openssl_verify($authStr, $authorization, $pubKey, OPENSSL_ALGO_MD5);
@@ -90,5 +84,4 @@ class RakanController extends BaseController
             abort(403);
         }
     }
-
 }

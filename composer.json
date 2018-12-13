@@ -14,8 +14,7 @@
     "php": "^7.1",
     "elfsundae/laravel-hashid": "^1.2",
     "aliyuncs/oss-sdk-php": "^2.3",
-    "league/flysystem": "^1.0",
-    "jenssegers/mongodb": "^3.4"
+    "league/flysystem": "^1.0"
   },
   "autoload": {
     "psr-4": {

@@ -18,7 +18,7 @@ class RakanServiceProvider extends ServiceProvider
         ]);
 
         $this->loadRoutesFrom(__DIR__ . '/routes.php');
-
+        $this->loadMigrationsFrom(__DIR__.'/migrations');
         $this->mergeConfigFrom(__DIR__ . '/config/rakan.php', 'rakan');
     }
 

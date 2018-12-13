@@ -2,57 +2,88 @@
 
 namespace TELstatic\Rakan\Traits;
 
-use Illuminate\Support\Facades\Log;
-use TELstatic\Rakan\Models\Files;
 use OSS\OssClient;
 use OSS\Core\OssException;
+use TELstatic\Rakan\Models\Rakan as File;
+use Illuminate\Support\Facades\Log;
 
 /**
+ * 文件扩展.
  */
 trait Rakan
 {
+    public $client;
+    public $prefix;
+    public $module;
+    public $expire;
+
+    public $accessKey;
+    public $accessSecret;
+    public $endpoint;
+    public $bucket;
+
     public function __construct()
     {
-        if (empty($this->prefix)) {
-            throw new \Exception('前缀必须');
-        }
-        if (empty($this->module)) {
-            throw new \Exception('模块名必须');
-        }
+        $this->accessKey = config('rakan.oss.access_key');
+        $this->accessSecret = config('rakan.oss.secret_key');
+        $this->endpoint = config('rakan.oss.endpoint');
+        $this->bucket = config('rakan.oss.bucket');
 
-        $this->per_page = !empty($this->per_page) ? $this->per_page:50;
+        try {
+            $this->client = new OssClient($this->accessKey, $this->accessSecret, $this->endpoint);
+        } catch (OssException $exception) {
 
-        if (empty($this->max_depth)) {
-            throw new \Exception('目录深度必须');
-        }
-        if (empty($this->max_width)) {
-            throw new \Exception('目录宽度必须');
-        }
-        if (empty($this->expire)) {
-            throw new \Exception('策略时效必须');
+            Log::error($exception->getMessage());
+
+            exit(500);
         }
     }
 
     /**
-     * 模块
+     * 前缀.
      */
-    public function module($name)
+    public function prefix($prefix = 'rakan')
     {
-        $this->module = $name;
+        $this->prefix = $prefix;
+        return $this->prefix;
     }
 
     /**
-     * 根目录
+     * 模块.
+     */
+    public function module($module = 'default')
+    {
+        $this->module = $module;
+        return $this->module;
+    }
+
+    /**
+     * 有效时间.
+     * 默认 120s.
+     */
+    public function expire($seconds = 0)
+    {
+        if ($seconds) {
+            $this->expire = $seconds;
+        }
+
+        $this->expire = config('rakan.oss.expire', 120);
+        return $this->expire;
+    }
+
+    /**
+     * 根目录.
      */
     public function root()
     {
-        return $this->prefix . '/' . hashid_encode($this->id);
+        return $this->prefix() . '/' . hashid_encode($this->id);
     }
 
     /**
-     * 创建Root目录
+     * 获取Root目录.
+     * 不存在则创建.
      */
-    protected function createRootFolder()
+    protected function getRootFolder()
     {
         $path = $this->root();
 
@@ -60,10 +91,10 @@ trait Rakan
             'pid'       => 0,
             'path'      => $path,
             'name'      => 'Root',
-            'module'    => $this->module,
+            'module'    => $this->module(),
             'target_id' => $this->id,
             'type'      => 'folder',
-            'sort'      => 255
+            'sort'      => 255,
         ];
 
         $where = [];
@@ -73,191 +104,158 @@ trait Rakan
         ];
 
         $where[] = [
-            'module', $this->module,
+            'module', $this->module(),
         ];
 
         $where[] = [
             'target_id', $this->id,
         ];
 
-        $files = Files::where($where)->firstOrCreate(['pid' => 0], $data);
+        $files = File::where($where)->firstOrCreate(['pid' => 0], $data);
 
         return $files;
     }
 
     /**
-     * 获取文件及目录
+     * 获取文件及目录.
      */
-    public function getFiles($pid = 0)
+    public function getFiles($pid = 0, $per_page = 50)
     {
         $where = [];
 
         $where[] = [
-            'module', $this->module
+            'module', $this->module(),
         ];
 
         $where[] = [
-            'target_id', $this->id
+            'target_id', $this->id,
         ];
 
-        if ($pid == 0) {
+        if (!$pid) {
             $where[] = [
-                'pid', $pid
+                'pid', $pid,
             ];
 
-            $parent = $this->createRootFolder();
+            $parent = $this->getRootFolder();
         } else {
             $where[] = [
-                '_id', $pid
+                'id', $pid,
             ];
-
-            $parent = Files::where($where)->first();
+            //todo should remove?
+            $parent = File::where($where)->first();
         }
 
-        $children = Files::where(['pid' => $parent->_id])->orderBy('sort', 'desc')->paginate($this->per_page);
+        $children = File::where(['pid' => $parent->id])->orderBy('sort', 'desc')->paginate($per_page);
 
         $data = [
             'parent'   => $parent,
-            'children' => $children
+            'children' => $children,
         ];
 
         return $data;
     }
 
     /**
-     * 创建目录
+     * 创建目录.
      */
     public function createFolder($pid, $name)
     {
-        $parent = Files::findOrFail($pid);
+        $parent = File::findOrFail($pid);
 
         $where = [];
 
         $where[] = [
-            'pid', $pid
+            'pid', $pid,
         ];
 
         $where[] = [
-            'type', 'folder'
+            'type', 'folder',
         ];
-
-        $childCount = Files::where($where)->count();
-
-        if ($childCount >= $this->max_width) {
-            return [
-                'status' => 500,
-                'msg'    => '目录超出限制'
-            ];
-        }
 
         $where[] = [
             'name', $name,
         ];
 
-        $folder = Files::where($where)->first();
+        $folder = File::where($where)->first();
 
         if ($folder) {
             return [
                 'status' => 500,
-                'msg'    => '目录已存在'
+                'msg'    => '目录已存在',
             ];
         }
 
         $data = [
-            'pid'       => $parent->_id,
+            'pid'       => $parent->id,
             'path'      => $parent->path . '/' . $name,
             'name'      => $name,
-            'module'    => $this->module,
+            'module'    => $this->module(),
             'target_id' => $this->id,
             'type'      => 'folder',
-            'sort'      => 255
+            'sort'      => 255,
         ];
 
-        $bool = Files::create($data);
+        $bool = File::create($data);
 
-        if ($bool) {
-            return [
-                'status' => 200,
-                'msg'    => '目录创建成功'
-            ];
-        }
         return [
-            'status' => 500,
-            'msg'    => '目录创建失败'
+            'status' => $bool ? 200:500,
+            'msg'    => '目录创建' . $bool ? '成功':'失败',
         ];
     }
 
     /**
-     * 检查文件是否存在
+     * 检查文件是否存在.
      */
     public function checkFile($path)
     {
         $bool = $this->checkObject($path);
 
-        if ($bool) {
-            return [
-                'status' => 500,
-                'msg'    => '文件已存在'
-            ];
-        }
-
         return [
-            'status' => 200,
-            'msg'    => ''
+            'status' => $bool ? 500:200,
+            'msg'    => $bool ? '文件已存在':'',
         ];
     }
 
     /**
-     * 检查文件唯一性
+     * 检查文件唯一性.
      */
     protected function checkObject($object)
     {
-        $accessKeyId = config('rakan.oss.access_key');
-        $accessKeySecret = config('rakan.oss.secret_key');
-        $endpoint = config('rakan.oss.endpoint');
-        $bucket = config('rakan.oss.bucket');
-
-        try {
-            $ossClient = new OssClient($accessKeyId, $accessKeySecret, $endpoint);
-            $exist = $ossClient->doesObjectExist($bucket, $object);
-        } catch (OssException $e) {
-            Log::error($e->getMessage());
-            return false;
-        }
+        $exist = $this->client->doesObjectExist($this->bucket, $object);
 
         return $exist;
     }
 
     /**
-     * 删除本地文件记录
+     * 删除本地文件记录.
      */
     public function deleteFiles($ids)
     {
         $where = [];
 
         $where [] = [
-            'target_id' => $this->id
+            'target_id', $this->id,
         ];
 
         $where[] = [
-            'module', $this->module
+            'module', $this->module(),
         ];
 
-        $folders = Files::where($where)->where(['type' => 'folder'])->whereIn('_id', $ids)->pluck('path');
-        $files = Files::where($where)->where(['type' => 'file'])->whereIn('_id', $ids)->pluck('path')->toArray();
+        $folders = File::where($where)->where(['type' => 'folder'])->whereIn('id', $ids)->pluck('path');
+        $files = File::where($where)->where(['type' => 'file'])->whereIn('id', $ids)->pluck('path')->toArray();
 
         //检查目录下是否存在其他目录 或者 文件
         foreach ($folders as $folder) {
             $whereFolder = [];
 
             $whereFolder[] = [
-                'path', 'like', $folder . '%'
+                'path', 'like', $folder . '%',
             ];
 
-            if (Files::where($whereFolder)->count() > 1) {
+            if (File::where($whereFolder)->count() > 1) {
                 return [
                     'status' => 500,
-                    'msg'    => '目录' . $folder . '不为空'
+                    'msg'    => '目录' . $folder . '不为空',
                 ];
                 break;
             }
@@ -266,22 +264,22 @@ trait Rakan
         $bool = $this->deleteObjects($files);
 
         if ($bool) {
-            Files::destroy($ids);
+            File::destroy($ids);
 
             return [
                 'status' => 200,
-                'msg'    => '文件删除成功'
+                'msg'    => '文件删除成功',
             ];
         }
 
         return [
             'status' => 500,
-            'msg'    => '文件删除失败'
+            'msg'    => '文件删除失败',
         ];
     }
 
     /**
-     * 删除Oss文件
+     * 删除Oss文件.
      */
     protected function deleteObjects($objects)
     {
@@ -289,44 +287,27 @@ trait Rakan
             return true;
         }
 
-        $accessKeyId = config('rakan.oss.access_key');
-        $accessKeySecret = config('rakan.oss.secret_key');
-        $endpoint = config('rakan.oss.endpoint');
-        $bucket = config('rakan.oss.bucket');
+        $bool = $this->client->deleteObjects($this->bucket, $objects);
 
-        try {
-            $ossClient = new OssClient($accessKeyId, $accessKeySecret, $endpoint);
-            $ossClient->deleteObjects($bucket, $objects);
-        } catch (OssException $e) {
-            Log::error($e->getMessage());
-            return false;
-        }
-
-        return true;
+        return $bool;
     }
 
-
     /**
-     * 获取上传策略
+     * 获取上传策略.
      */
     public function getPolicy()
     {
-        $accessKeyId = config('rakan.oss.access_key');
-        $accessKeySecret = config('rakan.oss.secret_key');
-        $host = config('rakan.oss.host');
-        $callbackUrl = route('rakan.callback');
-
         $callback_param = [
-            'callbackUrl'      => $callbackUrl,
+            'callbackUrl'      => route('rakan.callback'),
             'callbackBody'     => 'filename=${object}&size=${size}&mimeType=${mimeType}&height=${imageInfo.height}&width=${imageInfo.width}',
-            'callbackBodyType' => "application/x-www-form-urlencoded",
+            'callbackBodyType' => 'application/x-www-form-urlencoded',
         ];
 
         $callback_string = json_encode($callback_param);
         $base64_callback_body = base64_encode($callback_string);
 
         $now = time();
-        $expire = $this->expire;
+        $expire = $this->expire();
 
         $end = $now + $expire;
         $expiration = self::gmt_iso8601($end);
@@ -341,7 +322,7 @@ trait Rakan
         $start = [
             'starts-with',
             '$key',
-            $this->root()
+            $this->root(),
         ];
 
         $conditions[] = $start;
@@ -354,11 +335,11 @@ trait Rakan
         $policy = json_encode($arr);
         $base64_policy = base64_encode($policy);
         $string_to_sign = $base64_policy;
-        $signature = base64_encode(hash_hmac('sha1', $string_to_sign, $accessKeySecret, true));
+        $signature = base64_encode(hash_hmac('sha1', $string_to_sign, $this->accessSecret, true));
 
         $response = [];
-        $response['accessid'] = $accessKeyId;
-        $response['host'] = $host;
+        $response['accessid'] = $this->accessKey;
+        $response['host'] = config('rakan.oss.host');
         $response['policy'] = $base64_policy;
         $response['signature'] = $signature;
         $response['expire'] = $expire;
@@ -372,12 +353,12 @@ trait Rakan
 
     private function gmt_iso8601($time)
     {
-        $dtStr = date("c", $time);
+        $dtStr = date('c', $time);
         $mydatetime = new \DateTime($dtStr);
         $expiration = $mydatetime->format(\DateTime::ISO8601);
         $pos = strpos($expiration, '+');
         $expiration = substr($expiration, 0, $pos);
 
-        return $expiration . "Z";
+        return $expiration . 'Z';
     }
 }

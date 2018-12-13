@@ -8,11 +8,7 @@ class Rakan
     {
         return [
             'author' => 'TELstatic',
-            'email'  => 'telstatic@gmail.com'
+            'email'  => 'telstatic@gmail.com',
         ];
     }
-
-    
-
-
 }

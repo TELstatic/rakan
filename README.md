@@ -13,23 +13,10 @@
     namespace App\Models\User;
     
     use TELstatic\Rakan\Traits\Rakan;
+    ...
     
     class User {
-        
         use Rakan;
-        
-        public $prefix='User';
-        
-        public $module='user';
-    
-        public $per_page=100;
-        
-        public $max_depth=10;
-        
-        public $max_width=10;
-        
-        public $expire=3600;
-        
     }
     
     Controller FileController.php
@@ -66,10 +53,6 @@
         public function checkFile(Request $request){
             return $this->checkFile($request->path);
         }
-        
-        
-    
-    
     }
 
 
@@ -77,11 +60,9 @@
 
 | name| type | require | default| memo | 
 | ---- | --- | --- | ---| ---|
-| prefix | string | true | null | 目录前缀|
-| module | string | true | null | 模块 |
-| max_depth | int | false | 10  | 目录层级| 
-| max_with  | int | false | 10  | 最多同级目录|
-| expire    | int | false | 3600| 策略有效时间
+| prefix | string | true | rakan | 目录前缀|
+| module | string | true | default | 模块 |
+| expire    | int | false | 3600| 策略有效时间|
 
 ### 配置
     
@@ -92,7 +73,7 @@
 | ALI_AK | null | OSS access_key |
 | ALI_SK | null | OSS secret_key |
 | ALI_CALLBACK | null | 上传回调地址 |
-| ALI_EXPIRE | 3600 | 策略有效时间 |
+| ALI_EXPIRE | 120 | 策略有效时间 单位:s |
 
 ### 方法
     
