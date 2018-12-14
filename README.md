@@ -1,8 +1,30 @@
-# 阿里云OSS配套插件
+# rakan
 
+>阿里云OSS配套扩展包(Laravel)
+
+* [安装](#installation)
+* [使用](#usage)
+* [属性](#props)
+* [配置](#env)
+* [方法](#function) 
+    * [获取文件列表](#getFiles)
+    * [获取上传策略](#getPolicy)
+    * [创建目录](#createFolder)
+    * [检查文件唯一性](#checkFile)
+    * [删除文件及目录](#deleteFiles)
+
+* [路由](#router)
+
+### 简介
+    通用文件管理器,支持阿里云OSS直传
+
+<div id="installation"></div>
+    
 ### 安装
 
     composer require telstatic/rakan
+
+<div id="usage"></div>
 
 ### 使用
     
@@ -55,6 +77,7 @@
         }
     }
 
+<div id="props"></div>
 
 ### 属性
 
@@ -64,8 +87,10 @@
 | module | string | true | default | 模块 |
 | expire    | int | false | 3600| 策略有效时间|
 
+<div id="env"></div>
+
 ### 配置
-    
+
 | name | default|memo|
 | --- | --- | --- |
 | ALI_HOST | null | OSS上传地址 |    
@@ -75,7 +100,11 @@
 | ALI_CALLBACK | null | 上传回调地址 |
 | ALI_EXPIRE | 120 | 策略有效时间 单位:s |
 
+<div id="function"></div>
+
 ### 方法
+
+<div id="getFiles"></div>    
     
 - getFiles 获取文件及目录
     
@@ -134,6 +163,9 @@
         }
     }
 
+<div id="
+"></div>
+
 - createFolder 创建目录
 
 参数
@@ -159,6 +191,8 @@
         msg:'目录创建成功'
     }
 
+<div id="checkFile"></div>
+
 - checkFile 检查文件是否存在
 
 参数
@@ -183,6 +217,8 @@
         msg : ''
     }
     
+<div id="deleteFiles"></div>    
+    
 - deleteFiles 删除文件及目录
     
 参数
@@ -206,7 +242,9 @@
         status:500,
         msg:'目录 test 不为空'
     }
-    
+
+<div id="getPolicy"></div>
+
 - getPolicy 获取上传策略
     
 返回
@@ -221,3 +259,10 @@
         "expire": 3600,
         "callback": "eyJjYWxsYmFja1VybCI6Imh0dHBzOlwvXc9zag9wLnRlbHN0YXRpyy54EXpcL2NhbGxiYWNrXC9vc3MiLCJjYWxsYmFja0JvZHkiOiJmaWxlbmFtZT0ke29iamVjdH0mc2l6ZT0ke3NpemV9Jm1pbWVUeXBlPSR7bWltZVR5cGV9JmhlaWdodD0ke2ltYWdlSW5mby5oZWlnaHR9JndpZHRoPSR7aW1hZ2VJbmZvLndpZHRofSIsImNhbGxiYWNrQm9keVR5cGUiOiJhcHBsaWNhdGlvblwveC13d3ctZm9ybS11cmxlbmNvZGVkIn0="
     }
+
+### TODO
+
+    1. 云适配
+        七牛云,又拍云,腾讯COS
+    2. 多文件类型适配
+        txt,etc.

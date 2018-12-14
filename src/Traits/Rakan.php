@@ -2,10 +2,10 @@
 
 namespace TELstatic\Rakan\Traits;
 
-use OSS\OssClient;
-use OSS\Core\OssException;
-use TELstatic\Rakan\Models\Rakan as File;
 use Illuminate\Support\Facades\Log;
+use OSS\Core\OssException;
+use OSS\OssClient;
+use TELstatic\Rakan\Models\Rakan as File;
 
 /**
  * 文件扩展.
@@ -36,7 +36,6 @@ trait Rakan
         try {
             $this->client = new OssClient($this->accessKey, $this->accessSecret, $this->endpoint);
         } catch (OssException $exception) {
-
             Log::error($exception->getMessage());
 
             exit(500);
@@ -65,7 +64,7 @@ trait Rakan
      * 有效时间.
      * 默认 120s.
      */
-    public function expire($seconds = 0)
+    public function expire(int $seconds = 0)
     {
         if ($seconds) {
             $this->expire = $seconds;
@@ -329,7 +328,8 @@ trait Rakan
             $this->root(),
         ];
 
-        $conditions[] = $start;
+        //todo
+//        $conditions[] = $start;
 
         $arr = [
             'expiration' => $expiration,

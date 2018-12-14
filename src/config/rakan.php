@@ -12,6 +12,6 @@ return [
         'expire'     => env('ALI_EXPIRE', 120),
     ],
     'table' => [
-        'name' => 'rankan_files'
+        'name' => 'rakan_files'
     ]
 ];

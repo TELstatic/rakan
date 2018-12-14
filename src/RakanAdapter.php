@@ -33,7 +33,6 @@ class RakanAdapter extends AbstractAdapter
 
     public function write($path, $contents, Config $config)
     {
-
     }
 
     public function writeStream($path, $resource, Config $config)
@@ -88,7 +87,7 @@ class RakanAdapter extends AbstractAdapter
 
     public function rename($path, $newpath)
     {
-        if (! $this->copy($path, $newpath)){
+        if (! $this->copy($path, $newpath)) {
             return false;
         }
 
@@ -158,8 +157,9 @@ class RakanAdapter extends AbstractAdapter
 
     public function getMimetype($path)
     {
-        if ($object = $this->getMetadata($path))
+        if ($object = $this->getMetadata($path)) {
             $object['mimetype'] = $object['content-type'];
+        }
         return $object;
     }
 
@@ -176,8 +176,9 @@ class RakanAdapter extends AbstractAdapter
 
     public function getTimestamp($path)
     {
-        if ($object = $this->getMetadata($path))
+        if ($object = $this->getMetadata($path)) {
             $object['timestamp'] = strtotime($object['last-modified']);
+        }
         return $object;
     }
 
@@ -203,5 +204,4 @@ class RakanAdapter extends AbstractAdapter
         }
         return $res;
     }
-
 }
