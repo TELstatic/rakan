@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Log;
 use OSS\Core\OssException;
 use OSS\OssClient;
 use TELstatic\Rakan\Models\Rakan as File;
+use Vinkla\Hashids\Facades\Hashids;
 
 /**
  * 文件扩展.
@@ -29,9 +30,9 @@ trait Rakan
         $this->endpoint = config('rakan.oss.endpoint');
         $this->bucket = config('rakan.oss.bucket');
 
-        $this->module = 'default';
-        $this->prefix = 'rakan';
-        $this->expire = '120';
+        $this->module = config('rakan.module ');
+        $this->prefix = config('rakan.prefix');
+        $this->expire = config('rakan.oss.expire');
 
         try {
             $this->client = new OssClient($this->accessKey, $this->accessSecret, $this->endpoint);
@@ -79,7 +80,7 @@ trait Rakan
      */
     public function root()
     {
-        return $this->prefix.'/'.$this->module.'/'.hashid_encode($this->id);
+        return $this->prefix.'/'.$this->module.'/'.Hashids::encode($this->id);
     }
 
     /**
