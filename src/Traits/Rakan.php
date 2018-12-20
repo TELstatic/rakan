@@ -30,7 +30,7 @@ trait Rakan
         $this->endpoint = config('rakan.oss.endpoint');
         $this->bucket = config('rakan.oss.bucket');
 
-        $this->module = config('rakan.module ');
+        $this->module = config('rakan.module');
         $this->prefix = config('rakan.prefix');
         $this->expire = config('rakan.oss.expire');
 
