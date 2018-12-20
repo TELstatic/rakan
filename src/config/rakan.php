@@ -1,8 +1,8 @@
 <?php
 
 return [
-    'debug' => true,
-    'oss'   => [
+    'debug'  => true,
+    'oss'    => [
         'host'       => env('ALI_HOST'),
         'endpoint'   => env('ALI_ENDPOINT'),
         'bucket'     => env('ALI_BUCKET'),
@@ -11,7 +11,9 @@ return [
         'callback'   => env('ALI_CALLBACK'),
         'expire'     => env('ALI_EXPIRE', 120),
     ],
-    'table' => [
+    'table'  => [
         'name' => 'rakan_files'
-    ]
+    ],
+    'prefix' => 'rakan',
+    'module' => 'default',
 ];
