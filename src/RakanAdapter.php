@@ -3,205 +3,124 @@
 namespace TELstatic\Rakan;
 
 use League\Flysystem\Adapter\AbstractAdapter;
-use League\Flysystem\AdapterInterface;
 use League\Flysystem\Config;
-use League\Flysystem\Util;
-use OSS\Core\OssException;
-use OSS\OssClient;
-use Illuminate\Support\Facades\Log;
 
 class RakanAdapter extends AbstractAdapter
 {
-    public $client;
+    protected $gateway;
 
-    public $bucket;
-
-
-    public function __construct()
+    public function __construct($gateway = 'oss')
     {
-        $accessKeyId = config('rakan.oss.access_id');
-        $accessKeySecret = config('rakan.oss.access_key');
-        $endpoint = config('rakan.oss.endpoint');
-        $this->bucket = config('rakan.oss.bucket');
-
-        try {
-            $this->client = new OssClient($accessKeyId, $accessKeySecret, $endpoint);
-        } catch (OssException $exception) {
-            Log::error(__FUNCTION__, $exception);
-        }
+        $this->gateway = $gateway;
     }
 
     public function write($path, $contents, Config $config)
     {
+        return app('rakan.'.$this->gateway)->write($path, $contents, $config);
     }
 
     public function writeStream($path, $resource, Config $config)
     {
-        $object = $this->applyPathPrefix($path);
-        $options = $this->getOptions($this->options, $config);
-        $options[OssClient::OSS_CHECK_MD5] = true;
-        if (!isset($options[OssClient::OSS_CONTENT_TYPE])) {
-            $options[OssClient::OSS_CONTENT_TYPE] = Util::guessMimeType($path, '');
-        }
-        try {
-            $this->client->uploadFile($this->bucket, $object, $filePath, $options);
-        } catch (OssException $e) {
-            Log::error(__FUNCTION__, $e);
-            return false;
-        }
-        return $this->normalizeResponse($options, $path);
+        return app('rakan.'.$this->gateway)->writeStream($path, $resource, $config);
     }
 
     public function update($path, $contents, Config $config)
     {
-        // TODO: Implement update() method.
+        return app('rakan.'.$this->gateway)->update($path, $contents, $config);
     }
 
     public function updateStream($path, $resource, Config $config)
     {
-        // TODO: Implement updateStream() method.
+        return app('rakan.'.$this->gateway)->updateStream($path, $resource, $config);
     }
 
     public function read($path)
     {
-        // TODO: Implement read() method.
+        return app('rakan.'.$this->gateway)->read($path);
     }
 
     public function readStream($path)
     {
-        // TODO: Implement readStream() method.
+        return app('rakan.'.$this->gateway)->readStream($path);
     }
 
     public function copy($path, $newpath)
     {
-        $object = $this->applyPathPrefix($path);
-        $newObject = $this->applyPathPrefix($newpath);
-        try {
-            $this->client->copyObject($this->bucket, $object, $this->bucket, $newObject);
-        } catch (OssException $e) {
-            Log::error(__FUNCTION__, $e);
-            return false;
-        }
-        return true;
+        return app('rakan.'.$this->gateway)->copy($path, $newpath);
     }
 
     public function rename($path, $newpath)
     {
-        if (! $this->copy($path, $newpath)) {
-            return false;
-        }
-
-        return $this->delete($path);
+        return app('rakan.'.$this->gateway)->rename($path, $newpath);
     }
 
     public function delete($path)
     {
-        $object = $this->applyPathPrefix($path);
-
-        try {
-            $this->client->deleteObject($this->bucket, $object);
-        } catch (OssException $e) {
-            Log::error(__FUNCTION__, $e);
-            return false;
-        }
-        return !$this->has($path);
+        return app('rakan.'.$this->gateway)->delete($path);
     }
 
     public function deleteDir($dirname)
     {
-        $dirObjects = $this->listDirObjects($dirname, true);
-        if (count($dirObjects['objects']) > 0) {
-            foreach ($dirObjects['objects'] as $object) {
-                $objects[] = $object['Key'];
-            }
-            try {
-                $this->client->deleteObjects($this->bucket, $objects);
-            } catch (OssException $e) {
-                Log::error(__FUNCTION__, $e);
-                return false;
-            }
-        }
-        try {
-            $this->client->deleteObject($this->bucket, $dirname);
-        } catch (OssException $e) {
-            Log::error(__FUNCTION__, $e);
-            return false;
-        }
-        return true;
+        return app('rakan.'.$this->gateway)->deleteDir($dirname);
     }
 
     public function createDir($dirname, Config $config)
     {
-        // TODO: Implement createDir() method.
+        return app('rakan.'.$this->gateway)->createDir($dirname, $config);
     }
 
     public function getMetadata($path)
     {
-        $object = $this->applyPathPrefix($path);
-        try {
-            $objectMeta = $this->client->getObjectMeta($this->bucket, $object);
-        } catch (OssException $e) {
-            Log::error(__FUNCTION__, $e);
-            return false;
-        }
-        return $objectMeta;
+        return app('rakan.'.$this->gateway)->getMetadata($path);
     }
-
 
     public function getSize($path)
     {
-        $object = $this->getMetadata($path);
-        $object['size'] = $object['content-length'];
-        return $object;
+        return app('rakan.'.$this->gateway)->getSize($path);
     }
 
     public function getMimetype($path)
     {
-        if ($object = $this->getMetadata($path)) {
-            $object['mimetype'] = $object['content-type'];
-        }
-        return $object;
+        return app('rakan.'.$this->gateway)->getMimetype($path);
     }
 
     public function has($path)
     {
-        $object = $this->applyPathPrefix($path);
-        return $this->client->doesObjectExist($this->bucket, $object);
+        return app('rakan.'.$this->gateway)->has($path);
     }
 
     public function listContents($directory = '', $recursive = false)
     {
-        // TODO: Implement listContents() method.
+        return app('rakan.'.$this->gateway)->listContents($directory, $recursive);
     }
 
     public function getTimestamp($path)
     {
-        if ($object = $this->getMetadata($path)) {
-            $object['timestamp'] = strtotime($object['last-modified']);
-        }
-        return $object;
+        return app('rakan.'.$this->gateway)->getTimestamp($path);
     }
 
     public function setVisibility($path, $visibility)
     {
-        // TODO: Implement setVisibility() method.
+        return app('rakan.'.$this->gateway)->setVisibility($path, $visibility);
+    }
+
+    public function policy()
+    {
+        return app('rakan.'.$this->gateway)->policy();
+    }
+
+    public function verify()
+    {
+        return app('rakan.'.$this->gateway)->verify();
     }
 
     public function getVisibility($path)
     {
-        $object = $this->applyPathPrefix($path);
-        try {
-            $acl = $this->client->getObjectAcl($this->bucket, $object);
-        } catch (OssException $e) {
-            Log::error(__FUNCTION__, $e);
-            return false;
-        }
+        return app('rakan.'.$this->gateway)->getVisibility($path);
+    }
 
-        if ($acl == OssClient::OSS_ACL_TYPE_PUBLIC_READ) {
-            $res['visibility'] = AdapterInterface::VISIBILITY_PUBLIC;
-        } else {
-            $res['visibility'] = AdapterInterface::VISIBILITY_PRIVATE;
-        }
-        return $res;
+    public function getUrl($path)
+    {
+        return app('rakan.'.$this->gateway)->getUrl($path);
     }
 }
