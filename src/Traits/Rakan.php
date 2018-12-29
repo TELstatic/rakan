@@ -3,44 +3,23 @@
 namespace TELstatic\Rakan\Traits;
 
 use Illuminate\Support\Facades\Log;
-use OSS\Core\OssException;
-use OSS\OssClient;
+use Illuminate\Support\Facades\Storage;
 use TELstatic\Rakan\Models\Rakan as File;
-use Vinkla\Hashids\Facades\Hashids;
 
 /**
  * 文件扩展.
  */
 trait Rakan
 {
-    public $client;
     public $prefix;
     public $module;
-    public $expire;
-
-    public $accessKey;
-    public $accessSecret;
-    public $endpoint;
-    public $bucket;
+    public $gateway;
 
     public function __construct()
     {
-        $this->accessKey = config('rakan.oss.access_key');
-        $this->accessSecret = config('rakan.oss.secret_key');
-        $this->endpoint = config('rakan.oss.endpoint');
-        $this->bucket = config('rakan.oss.bucket');
-
-        $this->module = config('rakan.module');
-        $this->prefix = config('rakan.prefix');
-        $this->expire = config('rakan.oss.expire');
-
-        try {
-            $this->client = new OssClient($this->accessKey, $this->accessSecret, $this->endpoint);
-        } catch (OssException $exception) {
-            Log::error($exception->getMessage());
-
-            exit(500);
-        }
+        $this->module = config('rakan.default.module');
+        $this->prefix = config('rakan.default.prefix');
+        $this->gateway = config('rakan.default.gateway');
     }
 
     /**
@@ -62,16 +41,11 @@ trait Rakan
     }
 
     /**
-     * 有效时间.
-     * 默认 120s.
+     * 网关.
      */
-    public function expire(int $seconds = 0)
+    public function gateway($gateway = 'oss')
     {
-        if ($seconds) {
-            $this->expire = $seconds;
-        }
-
-        $this->expire = config('rakan.oss.expire', 120);
+        $this->gateway = $gateway;
         return $this;
     }
 
@@ -80,7 +54,7 @@ trait Rakan
      */
     public function root()
     {
-        return $this->prefix.'/'.$this->module.'/'.Hashids::encode($this->id);
+        return $this->prefix.'/'.$this->module.'/'.hashid_encode($this->id);
     }
 
     /**
@@ -96,6 +70,8 @@ trait Rakan
             'path'      => $path,
             'name'      => 'Root',
             'module'    => $this->module,
+            'gateway'   => $this->gateway,
+            'host'      => $this->host,
             'target_id' => $this->id,
             'type'      => 'folder',
             'sort'      => 255,
@@ -113,6 +89,10 @@ trait Rakan
 
         $where[] = [
             'target_id', $this->id,
+        ];
+
+        $where[] = [
+            'gateway', $this->gateway
         ];
 
         $files = File::where($where)->firstOrCreate(['pid' => 0], $data);
@@ -180,6 +160,10 @@ trait Rakan
             'name', $name,
         ];
 
+        $where[] = [
+            'gateway', $this->gateway
+        ];
+
         $folder = File::where($where)->first();
 
         if ($folder) {
@@ -194,6 +178,8 @@ trait Rakan
             'path'      => $parent->path.'/'.$name,
             'name'      => $name,
             'module'    => $parent->module,
+            'gateway'   => $this->gateway,
+            'host'      => $this->host,
             'target_id' => $this->id,
             'type'      => 'folder',
             'sort'      => 255,
@@ -212,22 +198,12 @@ trait Rakan
      */
     public function checkFile($path)
     {
-        $bool = $this->checkObject($path);
+        $bool = Storage::disk($this->gateway)->exists($path);
 
         return [
             'status' => $bool ? 500 : 200,
             'msg'    => $bool ? '文件已存在' : '',
         ];
-    }
-
-    /**
-     * 检查文件唯一性.
-     */
-    protected function checkObject($object)
-    {
-        $exist = $this->client->doesObjectExist($this->bucket, $object);
-
-        return $exist;
     }
 
     /**
@@ -285,15 +261,13 @@ trait Rakan
     /**
      * 删除Oss文件.
      */
-    protected function deleteObjects($objects)
+    public function deleteObjects($objects)
     {
         if (empty($objects)) {
             return true;
         }
 
-        $bool = $this->client->deleteObjects($this->bucket, $objects);
-
-        return $bool;
+        return Storage::disk($this->gateway)->delete($objects);
     }
 
     /**
@@ -301,69 +275,6 @@ trait Rakan
      */
     public function getPolicy()
     {
-        $callback_param = [
-            'callbackUrl'      => route('rakan.callback'),
-            'callbackBody'     => 'filename=${object}&size=${size}&mimeType=${mimeType}&height=${imageInfo.height}&width=${imageInfo.width}',
-            'callbackBodyType' => 'application/x-www-form-urlencoded',
-        ];
-
-        $callback_string = json_encode($callback_param);
-        $base64_callback_body = base64_encode($callback_string);
-
-        $now = time();
-        $expire = $this->expire;
-
-        $end = $now + $expire;
-        $expiration = self::gmt_iso8601($end);
-
-        $condition = [
-            'content-length-range',
-            0,
-            1048576000,
-        ];
-        $conditions[] = $condition;
-
-        $start = [
-            'starts-with',
-            '$key',
-            $this->root(),
-        ];
-
-        //todo
-//        $conditions[] = $start;
-
-        $arr = [
-            'expiration' => $expiration,
-            'conditions' => $conditions,
-        ];
-
-        $policy = json_encode($arr);
-        $base64_policy = base64_encode($policy);
-        $string_to_sign = $base64_policy;
-        $signature = base64_encode(hash_hmac('sha1', $string_to_sign, $this->accessSecret, true));
-
-        $response = [];
-        $response['accessid'] = $this->accessKey;
-        $response['host'] = config('rakan.oss.host');
-        $response['policy'] = $base64_policy;
-        $response['signature'] = $signature;
-        $response['expire'] = $expire;
-
-        if (config('app.env') != 'local') {
-            $response['callback'] = $base64_callback_body;
-        }
-
-        return $response;
-    }
-
-    private function gmt_iso8601($time)
-    {
-        $dtStr = date('c', $time);
-        $mydatetime = new \DateTime($dtStr);
-        $expiration = $mydatetime->format(\DateTime::ISO8601);
-        $pos = strpos($expiration, '+');
-        $expiration = substr($expiration, 0, $pos);
-
-        return $expiration.'Z';
+        return Storage::disk($this->gateway)->policy();
     }
 }

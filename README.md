@@ -1,6 +1,6 @@
 # rakan
 
->阿里云OSS配套扩展包(Laravel)
+>Laravel 文件系统扩展包 + 文件管理系统
 
 * [安装](#installation)
 * [使用](#usage)

@@ -10,7 +10,7 @@ class Rakan extends Model
     {
         parent::__construct($attributes);
 
-        $this->setTable(config('rakan.table.name'));
+        $this->setTable(config('rakan.default.table_name'));
     }
 
     protected $guarded = [];
@@ -22,7 +22,7 @@ class Rakan extends Model
     public function getUrlAttribute()
     {
         if ($this->type === 'file') {
-            return config('rakan.oss.host').$this->path;
+            return rtrim($this->host, '/').'/'.$this->path;
         } else {
             return null;
         }
