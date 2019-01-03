@@ -422,9 +422,46 @@ class Oss implements GatewayApplicationInterface
     {
         $dir = $this->listDirObjects($dirname, true);
 
-        return $dir;
+        $contents = $dir["objects"];
+        $result = array_map([$this, 'normalizeResponseOri'], $contents);
+
+        $result = array_filter($result, function ($value) {
+            return $value['path'] !== false;
+        });
+
+        return $result;
     }
 
+    protected function removePathPrefix($path)
+    {
+        return substr($path, strlen(''));
+    }
+
+    protected static $resultMap = [
+        'Body'           => 'raw_contents',
+        'Content-Length' => 'size',
+        'ContentType'    => 'mimetype',
+        'Size'           => 'size',
+        'StorageClass'   => 'storage_class',
+    ];
+
+    protected function normalizeResponseOri(array $object, $path = null)
+    {
+        $result = ['path' => $path ? : $this->removePathPrefix(isset($object['Key']) ? $object['Key'] : $object['Prefix'])];
+        $result['dirname'] = Util::dirname($result['path']);
+        if (isset($object['LastModified'])) {
+            $result['timestamp'] = strtotime($object['LastModified']);
+        }
+        if (substr($result['path'], -1) === '/') {
+            $result['type'] = 'dir';
+            $result['path'] = rtrim($result['path'], '/');
+            return $result;
+        }
+
+        $result = array_merge($result, Util::map($object, static::$resultMap), ['type' => 'file']);
+
+        return $result;
+    }
 
     private function gmt_iso8601($time)
     {

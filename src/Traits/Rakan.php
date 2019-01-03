@@ -2,9 +2,9 @@
 
 namespace TELstatic\Rakan\Traits;
 
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use TELstatic\Rakan\Models\Rakan as File;
+use Hashids\Hashids;
 
 /**
  * 文件扩展.
@@ -52,9 +52,11 @@ trait Rakan
     /**
      * 根目录.
      */
-    public function root()
+    protected function root()
     {
-        return $this->prefix.'/'.$this->module.'/'.hashid_encode($this->id);
+        $hashids = new Hashids(config('rakan.hashids.salt'), config('rakan.hashids.length'), config('rakan.hashids.alphabet'));
+
+        return $this->prefix.'/'.$this->module.'/'.$hashids->encode($this->id);
     }
 
     /**
@@ -259,7 +261,7 @@ trait Rakan
     }
 
     /**
-     * 删除Oss文件.
+     * 删除文件.
      */
     public function deleteObjects($objects)
     {

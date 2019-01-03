@@ -19,7 +19,6 @@ class Qiniu implements GatewayApplicationInterface
     protected $secretKey;
     protected $bucket;
     protected $expire;
-    protected $endpoint;
     protected $host;
 
     protected $auth;
@@ -32,7 +31,6 @@ class Qiniu implements GatewayApplicationInterface
         $this->secretKey = config('rakan.gateways.qiniu.secret_key');
         $this->bucket = config('rakan.gateways.qiniu.bucket');
         $this->expire = config('rakan.gateways.qiniu.expire');
-        $this->endpoint = config('rakan.gateways.qiniu.endpoint');
         $this->host = config('rakan.gateways.qiniu.host');
 
         $this->auth = new Auth($this->accessKey, $this->secretKey);
@@ -232,9 +230,28 @@ class Qiniu implements GatewayApplicationInterface
         return false;
     }
 
-    public function listContents($dirname)
+    public function listContents($directory = '', $recursive = false)
     {
+        list($items, $error) = $this->bucketManger->listFiles($this->bucket, $directory);
 
+        if ($error !== null) {
+            Log::error($error->message());
+            return [];
+        } else {
+            $contents = [];
+            foreach (current($items) as $item) {
+                $normalized = [
+                    'type'      => 'file',
+                    'path'      => $item['key'],
+                    'timestamp' => $item['putTime']
+                ];
+                if ($normalized['type'] === 'file') {
+                    $normalized['size'] = $item['fsize'];
+                }
+                array_push($contents, $normalized);
+            }
+            return $contents;
+        }
     }
 
     public function getSize($path)
