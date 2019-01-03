@@ -244,7 +244,8 @@
 <div id="checkFile"></div>
 
 - checkFile 检查文件是否存在
-
+    注意网关设置
+    
 参数
 ​    
 
@@ -272,6 +273,7 @@
 <div id="deleteFiles"></div>    
 
 - deleteFiles 删除文件及目录
+  注意网关设置
   
 
 参数
@@ -300,7 +302,7 @@
 <div id="getPolicy"></div>
 
 - getPolicy 获取上传策略
-  
+  注意网关设置
 
 返回
 ​    

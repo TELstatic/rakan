@@ -21,7 +21,17 @@ class RakanController extends BaseController
 
         $fileInfo = pathinfo($request->get('filename'));
 
-        $folder = File::where(['path' => $fileInfo['dirname']])->firstOrFail();
+        $where = [];
+
+        $where[] = [
+            'path', $fileInfo['dirname']
+        ];
+
+        $where[] = [
+            'gateway', $gateway
+        ];
+
+        $folder = File::where($where)->firstOrFail();
 
         $data = [
             'path'      => $request->get('filename'),

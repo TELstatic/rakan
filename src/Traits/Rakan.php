@@ -167,7 +167,7 @@ trait Rakan
         ];
 
         $where[] = [
-            'gateway', $this->gateway
+            'gateway', $parent->gateway
         ];
 
         $folder = File::where($where)->first();
@@ -184,7 +184,7 @@ trait Rakan
             'path'      => $parent->path.'/'.$name,
             'name'      => $name,
             'module'    => $parent->module,
-            'gateway'   => $this->gateway,
+            'gateway'   => $parent->gateway,
             'host'      => $parent->host,
             'target_id' => $this->id,
             'type'      => 'folder',
@@ -221,10 +221,6 @@ trait Rakan
 
         $where [] = [
             'target_id', $this->id,
-        ];
-
-        $where[] = [
-            'module', $this->module,
         ];
 
         $folders = File::where($where)->where(['type' => 'folder'])->whereIn('id', $ids)->pluck('path');
@@ -267,7 +263,7 @@ trait Rakan
     /**
      * 删除文件.
      */
-    public function deleteObjects($objects)
+    protected function deleteObjects($objects)
     {
         if (empty($objects)) {
             return true;
