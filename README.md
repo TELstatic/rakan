@@ -210,16 +210,19 @@
         }
     }
 
+
 <div id="createFolder"></div>
 
 - createFolder 创建目录
 
 参数
 ​    
+
 | name | type | require | default | memo |
 | --- | --- | --- | --- | --- |
 | pid | string | true | null | 父级目录ID|
 | name | string | true | null | 目录名称 |
+
 
 返回
 
@@ -244,6 +247,7 @@
 
 参数
 ​    
+
 | name | type | require | default | memo |
 | --- | --- | --- | --- | --- |
 | path | string | true | null | 文件路径 |

@@ -73,7 +73,7 @@ trait Rakan
             'name'      => 'Root',
             'module'    => $this->module,
             'gateway'   => $this->gateway,
-            'host'      => $this->host,
+            'host'      => config('rakan.gateways.'.$this->gateway.'.host'),
             'target_id' => $this->id,
             'type'      => 'folder',
             'sort'      => 255,
@@ -97,7 +97,11 @@ trait Rakan
             'gateway', $this->gateway
         ];
 
-        $files = File::where($where)->firstOrCreate(['pid' => 0], $data);
+        $where[] = [
+            'path', $path
+        ];
+
+        $files = File::where($where)->firstOrCreate($data, $data);
 
         return $files;
     }
@@ -181,7 +185,7 @@ trait Rakan
             'name'      => $name,
             'module'    => $parent->module,
             'gateway'   => $this->gateway,
-            'host'      => $this->host,
+            'host'      => $parent->host,
             'target_id' => $this->id,
             'type'      => 'folder',
             'sort'      => 255,

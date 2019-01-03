@@ -2,9 +2,9 @@
 
 return [
     'hashids'  => [                         // Hash 混淆相关配置
-        'name'     => 'rakan',                        // 项目名
-        'length'   => 10,                             // 长度
-        'alphabet' => 'abcdefghijklmnopqrstuvwxyz'    // 素材
+        'salt'     => 'rakan',
+        'length'   => 10,
+        'alphabet' => 'abcdefghijklmnopqrstuvwxyz'
     ],
     'default'  => [                         //默认配置
         'prefix'     => 'rakan',               //前缀
