@@ -12,9 +12,10 @@
   "minimum-stability": "dev",
   "require": {
     "php": "^7.1",
-    "vinkla/hashids": "^5.1.0",
+    "hashids/hashids": "^3.0",
     "aliyuncs/oss-sdk-php": "^2.3",
-    "league/flysystem": "^1.0"
+    "league/flysystem": "^1.0",
+    "qiniu/php-sdk": "dev-master"
   },
   "autoload": {
     "psr-4": {

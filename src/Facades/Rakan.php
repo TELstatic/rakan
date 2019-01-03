@@ -10,4 +10,14 @@ class Rakan extends Facade
     {
         return 'Rakan';
     }
+
+    public static function oss()
+    {
+        return app('rakan.oss');
+    }
+
+    public function qiniu()
+    {
+        return app('rakan.qiniu');
+    }
 }
