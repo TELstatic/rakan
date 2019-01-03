@@ -1,6 +1,11 @@
 <?php
 
 return [
+    'hashids'  => [                         // Hash 混淆相关配置
+        'name'     => 'rakan',                        // 项目名
+        'length'   => 10,                             // 长度
+        'alphabet' => 'abcdefghijklmnopqrstuvwxyz'    // 素材
+    ],
     'default'  => [                         //默认配置
         'prefix'     => 'rakan',               //前缀
         'module'     => 'default',             //模块
@@ -20,7 +25,6 @@ return [
             'access_key' => env('QINIU_AK'),
             'secret_key' => env('QINIU_SK'),
             'bucket'     => env('QINIU_BUCKET'),
-            'endpoint'   => env('QINIU_ENDPOINT'),
             'host'       => env('QINIU_HOST'),
             'expire'     => env('QINIU_EXPIRE', 3600),
         ]
