@@ -163,6 +163,7 @@
 返回
 ​    形如:
 ​    
+
     {
         "parent": {
             "id": "1",
@@ -226,6 +227,7 @@
 
 形如:
 ​    
+
     {
         status:500,
         msg:'目录已存在'
@@ -252,6 +254,7 @@
 
 形如
 ​    
+
     {
         status :500,
         msg : '文件已存在'
@@ -279,6 +282,7 @@
 
 形如
 ​    
+
     {
         status:200,
         msg:'删除成功'
@@ -298,7 +302,7 @@
 ​    
 形如
 ​    
-    //oss
+
     {
         "data": {
             "OSSAccessKeyId": "{your-access_key}",
@@ -310,7 +314,6 @@
         "expire": "3600"
     }
     
-    //qiniu
     {
         "data": {
             "token": "JQ4aZNe87tA2FG-I01lxp7kJArP6opY_renx7MU:Tg8Zrx5XIVNY4fwhHK9nX200UcM=:eyJzY29wZSI6InRlbHN0YXRpYyIsImRlYWRsaW5lIjoxNTQ2NDg2NjE4fQ==",
