@@ -15,13 +15,6 @@ trait Rakan
     public $module;
     public $gateway;
 
-    public function __construct()
-    {
-        $this->module = config('rakan.default.module');
-        $this->prefix = config('rakan.default.prefix');
-        $this->gateway = config('rakan.default.gateway');
-    }
-
     /**
      * 前缀.
      */
@@ -56,7 +49,8 @@ trait Rakan
     {
         $hashids = new Hashids(config('rakan.hashids.salt'), config('rakan.hashids.length'), config('rakan.hashids.alphabet'));
 
-        return $this->prefix.'/'.$this->module.'/'.$hashids->encode($this->id);
+        $root = $this->prefix ?? config('rakan.default.prefix').'/'.($this->module ?? config('rakan.default.module')).'/'.$hashids->encode($this->id);
+        return $root;
     }
 
     /**
@@ -71,9 +65,9 @@ trait Rakan
             'pid'       => 0,
             'path'      => $path,
             'name'      => 'Root',
-            'module'    => $this->module,
-            'gateway'   => $this->gateway,
-            'host'      => config('rakan.gateways.'.$this->gateway.'.host'),
+            'module'    => $this->module ?? config('rakan.default.module'),
+            'gateway'   => $this->gateway ?? config('rakan.default.gateway'),
+            'host'      => config('rakan.gateways.'.$this->gateway ?? config('rakan.default.gateway').'.host'),
             'target_id' => $this->id,
             'type'      => 'folder',
             'sort'      => 255,
@@ -86,7 +80,7 @@ trait Rakan
         ];
 
         $where[] = [
-            'module', $this->module,
+            'module', $this->module ?? config('rakan.default.module'),
         ];
 
         $where[] = [
@@ -94,7 +88,7 @@ trait Rakan
         ];
 
         $where[] = [
-            'gateway', $this->gateway
+            'gateway', $this->gateway ?? config('rakan.default.gateway')
         ];
 
         $where[] = [
@@ -114,7 +108,7 @@ trait Rakan
         $where = [];
 
         $where[] = [
-            'module', $this->module,
+            'module', $this->module ?? config('rakan.default.module'),
         ];
 
         $where[] = [
@@ -167,7 +161,7 @@ trait Rakan
         ];
 
         $where[] = [
-            'gateway', $parent->gateway
+            'gateway', $parent->gateway ?? config('rakan.default.gateway')
         ];
 
         $folder = File::where($where)->first();
@@ -184,7 +178,7 @@ trait Rakan
             'path'      => $parent->path.'/'.$name,
             'name'      => $name,
             'module'    => $parent->module,
-            'gateway'   => $parent->gateway,
+            'gateway'   => $parent->gateway ?? config('rakan.default.gateway'),
             'host'      => $parent->host,
             'target_id' => $this->id,
             'type'      => 'folder',
@@ -204,7 +198,7 @@ trait Rakan
      */
     public function checkFile($path)
     {
-        $bool = Storage::disk($this->gateway)->exists($path);
+        $bool = Storage::disk($this->gateway ?? config('rakan.default.gateway'))->exists($path);
 
         return [
             'status' => $bool ? 500 : 200,
@@ -269,7 +263,7 @@ trait Rakan
             return true;
         }
 
-        return Storage::disk($this->gateway)->delete($objects);
+        return Storage::disk($this->gateway ?? config('rakan.default.gateway'))->delete($objects);
     }
 
     /**
@@ -277,6 +271,6 @@ trait Rakan
      */
     public function getPolicy()
     {
-        return Storage::disk($this->gateway)->policy();
+        return Storage::disk($this->gateway ?? config('rakan.default.gateway'))->policy();
     }
 }
