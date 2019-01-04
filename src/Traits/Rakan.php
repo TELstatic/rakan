@@ -2,9 +2,9 @@
 
 namespace TELstatic\Rakan\Traits;
 
+use Hashids\Hashids;
 use Illuminate\Support\Facades\Storage;
 use TELstatic\Rakan\Models\Rakan as File;
-use Hashids\Hashids;
 
 /**
  * 文件扩展.
@@ -21,6 +21,7 @@ trait Rakan
     public function prefix($prefix = 'rakan')
     {
         $this->prefix = $prefix;
+
         return $this;
     }
 
@@ -30,6 +31,7 @@ trait Rakan
     public function module($module = 'default')
     {
         $this->module = $module;
+
         return $this;
     }
 
@@ -39,6 +41,7 @@ trait Rakan
     public function gateway($gateway = 'oss')
     {
         $this->gateway = $gateway;
+
         return $this;
     }
 
@@ -50,6 +53,7 @@ trait Rakan
         $hashids = new Hashids(config('rakan.hashids.salt'), config('rakan.hashids.length'), config('rakan.hashids.alphabet'));
 
         $root = $this->prefix ?? config('rakan.default.prefix').'/'.($this->module ?? config('rakan.default.module')).'/'.$hashids->encode($this->id);
+
         return $root;
     }
 
@@ -88,11 +92,11 @@ trait Rakan
         ];
 
         $where[] = [
-            'gateway', $this->gateway ?? config('rakan.default.gateway')
+            'gateway', $this->gateway ?? config('rakan.default.gateway'),
         ];
 
         $where[] = [
-            'path', $path
+            'path', $path,
         ];
 
         $files = File::where($where)->firstOrCreate($data, $data);
@@ -161,7 +165,7 @@ trait Rakan
         ];
 
         $where[] = [
-            'gateway', $parent->gateway ?? config('rakan.default.gateway')
+            'gateway', $parent->gateway ?? config('rakan.default.gateway'),
         ];
 
         $folder = File::where($where)->first();
@@ -213,7 +217,7 @@ trait Rakan
     {
         $where = [];
 
-        $where [] = [
+        $where[] = [
             'target_id', $this->id,
         ];
 

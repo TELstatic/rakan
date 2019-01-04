@@ -2,8 +2,8 @@
 
 namespace TELstatic\Rakan;
 
-use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\ServiceProvider;
 use League\Flysystem\Filesystem;
 use TELstatic\Rakan\Plugins\Policy;
 use TELstatic\Rakan\Plugins\Verify;

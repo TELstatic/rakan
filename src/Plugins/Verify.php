@@ -5,7 +5,7 @@ namespace TELstatic\Rakan\Plugins;
 use League\Flysystem\Plugin\AbstractPlugin;
 
 /**
- * 回调校验
+ * 回调校验.
  */
 class Verify extends AbstractPlugin
 {

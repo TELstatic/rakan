@@ -3,10 +3,10 @@
 namespace TELstatic\Rakan\Gateways;
 
 use Illuminate\Support\Facades\Log;
-use League\Flysystem\Adapter\AbstractAdapter;
 use League\Flysystem\AdapterInterface;
 use League\Flysystem\Config;
 use League\Flysystem\Util;
+use OSS\Core\OssException;
 use OSS\OssClient;
 use TELstatic\Rakan\Interfaces\GatewayApplicationInterface;
 
@@ -108,7 +108,7 @@ class Oss implements GatewayApplicationInterface
         $pubKeyUrlBase64 = $auth['pubKeyUrlBase64'];
 
         if ($authorizationBase64 == '' || $pubKeyUrlBase64 == '') {
-            header("http/1.1 403 Forbidden");
+            header('http/1.1 403 Forbidden');
             exit();
         }
 
@@ -119,7 +119,7 @@ class Oss implements GatewayApplicationInterface
         $pubKey = file_get_contents($pubKeyUrl);
 
         if ($pubKey == '') {
-            header("http/1.1 403 Forbidden");
+            header('http/1.1 403 Forbidden');
             exit();
         }
 
@@ -135,7 +135,7 @@ class Oss implements GatewayApplicationInterface
         $ok = openssl_verify($authStr, $authorization, $pubKey, OPENSSL_ALGO_MD5);
 
         if (!$ok) {
-            header("http/1.1 403 Forbidden");
+            header('http/1.1 403 Forbidden');
             exit();
         }
     }
@@ -146,6 +146,7 @@ class Oss implements GatewayApplicationInterface
             $this->client->putObject($this->bucket, $path, $contents);
         } catch (OssException $e) {
             Log::error($e->getMessage());
+
             return false;
         }
 
@@ -155,6 +156,7 @@ class Oss implements GatewayApplicationInterface
     public function writeStream($path, $resource, Config $config)
     {
         $contents = stream_get_contents($resource);
+
         return $this->write($path, $contents, $config);
     }
 
@@ -164,6 +166,7 @@ class Oss implements GatewayApplicationInterface
             $this->client->uploadFile($this->bucket, $path, $filePath, false);
         } catch (OssException $e) {
             Log::error($e->getMessage());
+
             return false;
         }
 
@@ -194,9 +197,11 @@ class Oss implements GatewayApplicationInterface
     {
         try {
             $this->client->copyObject($this->bucket, $path, $this->bucket, $newpath);
+
             return true;
         } catch (OssException $e) {
             Log::error($e->getMessage());
+
             return false;
         }
     }
@@ -207,6 +212,7 @@ class Oss implements GatewayApplicationInterface
             $this->client->deleteObject($this->bucket, $path);
         } catch (OssException $e) {
             Log::error($e->getMessage());
+
             return false;
         }
 
@@ -226,10 +232,12 @@ class Oss implements GatewayApplicationInterface
             foreach ($dirObjects['objects'] as $object) {
                 $objects[] = $object['Key'];
             }
+
             try {
                 $this->client->deleteObjects($this->bucket, $objects);
             } catch (OssException $e) {
                 Log::error($e->getMessage());
+
                 return false;
             }
         }
@@ -238,8 +246,10 @@ class Oss implements GatewayApplicationInterface
             $this->client->deleteObject($this->bucket, $dirname);
         } catch (OssException $e) {
             Log::error($e->getMessage());
+
             return false;
         }
+
         return true;
     }
 
@@ -254,6 +264,7 @@ class Oss implements GatewayApplicationInterface
             $this->client->createObjectDir($this->bucket, $dirname, false);
         } catch (OssException $e) {
             Log::error($e->getMessage());
+
             return false;
         }
 
@@ -266,6 +277,7 @@ class Oss implements GatewayApplicationInterface
 
         $result['contents'] = (string)$result['Body'];
         unset($result['Body']);
+
         return $result;
     }
 
@@ -276,6 +288,7 @@ class Oss implements GatewayApplicationInterface
         rewind($result['stream']);
         $result['raw_contents']->detachStream();
         unset($result['raw_contents']);
+
         return $result;
     }
 
@@ -283,6 +296,7 @@ class Oss implements GatewayApplicationInterface
     {
         $result['Body'] = $this->client->getObject($this->bucket, $path);
         $result = array_merge($result, ['type' => 'file']);
+
         return $result;
     }
 
@@ -292,6 +306,7 @@ class Oss implements GatewayApplicationInterface
             $objectMeta = $this->client->getObjectMeta($this->bucket, $path);
         } catch (OssException $e) {
             Log::error($e->getMessage());
+
             return false;
         }
 
@@ -302,20 +317,25 @@ class Oss implements GatewayApplicationInterface
     {
         $object = $this->getMetadata($path);
         $object['size'] = $object['content-length'];
+
         return $object;
     }
 
     public function getMimetype($path)
     {
-        if ($object = $this->getMetadata($path))
+        if ($object = $this->getMetadata($path)) {
             $object['mimetype'] = $object['content-type'];
+        }
+
         return $object;
     }
 
     public function getTimestamp($path)
     {
-        if ($object = $this->getMetadata($path))
+        if ($object = $this->getMetadata($path)) {
             $object['timestamp'] = strtotime($object['last-modified']);
+        }
+
         return $object;
     }
 
@@ -325,6 +345,7 @@ class Oss implements GatewayApplicationInterface
             $res['visibility'] = $this->client->getBucketAcl($this->bucket);
         } catch (OssException $e) {
             Log::error($e->getMessage());
+
             return 'private';
         }
 
@@ -337,6 +358,7 @@ class Oss implements GatewayApplicationInterface
             $res['visibility'] = $this->client->getObjectAcl($this->bucket, $path);
         } catch (OssException $e) {
             Log::error($e->getMessage());
+
             return;
         }
 
@@ -364,6 +386,7 @@ class Oss implements GatewayApplicationInterface
     {
         $acl = ($visibility === AdapterInterface::VISIBILITY_PUBLIC) ? 'public-read' : 'private';
         $this->client->putBucketAcl($this->bucket, $acl);
+
         return compact('visibility');
     }
 
@@ -372,16 +395,18 @@ class Oss implements GatewayApplicationInterface
         $delimiter = '/';
         $nextMarker = '';
         $maxkeys = 1000;
-        $options = array(
+        $options = [
             'delimiter' => $delimiter,
             'prefix'    => $dirname,
             'max-keys'  => $maxkeys,
             'marker'    => $nextMarker,
-        );
+        ];
+
         try {
             $listObjectInfo = $this->client->listObjects($this->bucket, $options);
         } catch (OssException $e) {
             Log::error($e->getMessage());
+
             return;
         }
 
@@ -399,7 +424,7 @@ class Oss implements GatewayApplicationInterface
                 $dir['objects'][] = $object;
             }
         } else {
-            $dir["objects"] = [];
+            $dir['objects'] = [];
         }
         if (!empty($prefixList)) {
             foreach ($prefixList as $prefixInfo) {
@@ -412,9 +437,10 @@ class Oss implements GatewayApplicationInterface
             foreach ($dir['prefix'] as $pfix) {
                 $next = [];
                 $next = $this->listDirObjects($pfix, $recursive);
-                $dir["objects"] = array_merge($dir['objects'], $next["objects"]);
+                $dir["objects"] = array_merge($dir['objects'], $next['objects']);
             }
         }
+
         return $dir;
     }
 
@@ -422,7 +448,7 @@ class Oss implements GatewayApplicationInterface
     {
         $dir = $this->listDirObjects($dirname, true);
 
-        $contents = $dir["objects"];
+        $contents = $dir['objects'];
         $result = array_map([$this, 'normalizeResponseOri'], $contents);
 
         $result = array_filter($result, function ($value) {
@@ -447,7 +473,7 @@ class Oss implements GatewayApplicationInterface
 
     protected function normalizeResponseOri(array $object, $path = null)
     {
-        $result = ['path' => $path ? : $this->removePathPrefix(isset($object['Key']) ? $object['Key'] : $object['Prefix'])];
+        $result = ['path' => $path ?: $this->removePathPrefix(isset($object['Key']) ? $object['Key'] : $object['Prefix'])];
         $result['dirname'] = Util::dirname($result['path']);
         if (isset($object['LastModified'])) {
             $result['timestamp'] = strtotime($object['LastModified']);
@@ -455,6 +481,7 @@ class Oss implements GatewayApplicationInterface
         if (substr($result['path'], -1) === '/') {
             $result['type'] = 'dir';
             $result['path'] = rtrim($result['path'], '/');
+
             return $result;
         }
 
@@ -474,4 +501,3 @@ class Oss implements GatewayApplicationInterface
         return $expiration.'Z';
     }
 }
-

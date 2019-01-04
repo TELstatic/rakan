@@ -5,7 +5,7 @@ namespace TELstatic\Rakan\Plugins;
 use League\Flysystem\Plugin\AbstractPlugin;
 
 /**
- * 上传策略
+ * 上传策略.
  */
 class Policy extends AbstractPlugin
 {

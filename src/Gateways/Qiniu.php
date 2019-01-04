@@ -5,13 +5,13 @@ namespace TELstatic\Rakan\Gateways;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use League\Flysystem\Config;
-use TELstatic\Rakan\Interfaces\GatewayApplicationInterface;
 use Qiniu\Auth;
-use Qiniu\Storage\UploadManager;
+use Qiniu\Config as QiniuConfig;
 use Qiniu\Storage\BucketManager;
 use Qiniu\Storage\FormUploader;
 use Qiniu\Storage\ResumeUploader;
-use Qiniu\Config as QiniuConfig;
+use Qiniu\Storage\UploadManager;
+use TELstatic\Rakan\Interfaces\GatewayApplicationInterface;
 
 class Qiniu implements GatewayApplicationInterface
 {
@@ -43,7 +43,7 @@ class Qiniu implements GatewayApplicationInterface
         if (config('app.env') != 'local') {
             $policy = [
                 'callbackUrl'  => route('rakan.callback', ['gateway' => 'qiniu']),
-                'callbackBody' => 'filename=$(key)&size=$(fsize)&mimeType=$(mimeType)&width=$(imageInfo.width)&height=$(imageInfo.height)'
+                'callbackBody' => 'filename=$(key)&size=$(fsize)&mimeType=$(mimeType)&width=$(imageInfo.width)&height=$(imageInfo.height)',
             ];
         } else {
             $policy = [];
@@ -72,7 +72,7 @@ class Qiniu implements GatewayApplicationInterface
         $ok = $auth->verifyCallback($contentType, $authorization, $url, $callbackBody);
 
         if (!$ok) {
-            header("http/1.1 403 Forbidden");
+            header('http/1.1 403 Forbidden');
             exit();
         }
     }
@@ -116,7 +116,7 @@ class Qiniu implements GatewayApplicationInterface
     private function putFile($upToken, $key, $resource, $params = null, $mime = 'application/octet-stream', $checkCrc = false)
     {
         if ($resource === false) {
-            throw new \Exception("file can not open", 1);
+            throw new \Exception('file can not open', 1);
         }
 
         $params = UploadManager::trimParams($params);
@@ -128,10 +128,11 @@ class Qiniu implements GatewayApplicationInterface
             fclose($resource);
 
             if ($data === false) {
-                throw new \Exception("file can not read", 1);
+                throw new \Exception('file can not read', 1);
             }
 
             $result = FormUploader::put($upToken, $key, $data, new QiniuConfig(), $params, $mime, basename($key));
+
             return $result;
         }
 
@@ -140,6 +141,7 @@ class Qiniu implements GatewayApplicationInterface
         $ret = $up->upload(basename($key));
 
         fclose($resource);
+
         return $ret;
     }
 
@@ -153,6 +155,7 @@ class Qiniu implements GatewayApplicationInterface
         list($ret, $error) = $this->bucketManger->copy($this->bucket, $path, $this->bucket, $newpath);
         if ($error !== null) {
             Log::error($error);
+
             return false;
         }
 
@@ -170,6 +173,7 @@ class Qiniu implements GatewayApplicationInterface
 
         if ($error !== null) {
             Log::error($error);
+
             return false;
         }
 
@@ -182,6 +186,7 @@ class Qiniu implements GatewayApplicationInterface
 
         if ($error !== null) {
             Log::error($error);
+
             return false;
         }
 
@@ -236,6 +241,7 @@ class Qiniu implements GatewayApplicationInterface
 
         if ($error !== null) {
             Log::error($error->message());
+
             return [];
         } else {
             $contents = [];
@@ -243,13 +249,14 @@ class Qiniu implements GatewayApplicationInterface
                 $normalized = [
                     'type'      => 'file',
                     'path'      => $item['key'],
-                    'timestamp' => $item['putTime']
+                    'timestamp' => $item['putTime'],
                 ];
                 if ($normalized['type'] === 'file') {
                     $normalized['size'] = $item['fsize'];
                 }
                 array_push($contents, $normalized);
             }
+
             return $contents;
         }
     }
@@ -287,7 +294,6 @@ class Qiniu implements GatewayApplicationInterface
         return false;
     }
 
-
     public function getUrl($path)
     {
         return rtrim($this->host, '/').'/'.$path;
@@ -297,5 +303,4 @@ class Qiniu implements GatewayApplicationInterface
     {
         throw new \Exception('qiniu does not support object acl');
     }
-
 }

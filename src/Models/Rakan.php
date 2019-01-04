@@ -24,12 +24,12 @@ class Rakan extends Model
         if ($this->type === 'file') {
             return rtrim($this->host, '/').'/'.$this->path;
         } else {
-            return null;
+            return;
         }
     }
 
     /**
-     * 选中状态
+     * 选中状态.
      */
     public function getCheckedAttribute()
     {
@@ -37,7 +37,7 @@ class Rakan extends Model
     }
 
     /**
-     * 排序
+     * 排序.
      */
     public function getOrderAttribute()
     {

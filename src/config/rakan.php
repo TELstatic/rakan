@@ -4,7 +4,7 @@ return [
     'hashids'  => [                         // Hash 混淆相关配置
         'salt'     => 'rakan',
         'length'   => 10,
-        'alphabet' => 'abcdefghijklmnopqrstuvwxyz'
+        'alphabet' => 'abcdefghijklmnopqrstuvwxyz',
     ],
     'default'  => [                         //默认配置
         'prefix'     => 'rakan',               //前缀
@@ -27,6 +27,6 @@ return [
             'bucket'     => env('QINIU_BUCKET'),
             'host'       => env('QINIU_HOST'),
             'expire'     => env('QINIU_EXPIRE', 3600),
-        ]
-    ]
+        ],
+    ],
 ];
