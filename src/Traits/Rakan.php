@@ -67,7 +67,7 @@ trait Rakan
             'name'      => 'Root',
             'module'    => $this->module ?? config('rakan.default.module'),
             'gateway'   => $this->gateway ?? config('rakan.default.gateway'),
-            'host'      => config('rakan.gateways.'.$this->gateway ?? config('rakan.default.gateway').'.host'),
+            'host'      => config('rakan.gateways.'.($this->gateway ?? config('rakan.default.gateway')).'.host'),
             'target_id' => $this->id,
             'type'      => 'folder',
             'sort'      => 255,
