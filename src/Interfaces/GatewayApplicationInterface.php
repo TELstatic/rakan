@@ -41,5 +41,4 @@ interface GatewayApplicationInterface
     public function listContents($dirname);
 
     public function getUrl($path);
-
 }

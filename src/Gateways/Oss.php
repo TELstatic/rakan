@@ -275,7 +275,7 @@ class Oss implements GatewayApplicationInterface
     {
         $result = $this->readObject($path);
 
-        $result['contents'] = (string)$result['Body'];
+        $result['contents'] = (string) $result['Body'];
         unset($result['Body']);
 
         return $result;
@@ -437,7 +437,7 @@ class Oss implements GatewayApplicationInterface
             foreach ($dir['prefix'] as $pfix) {
                 $next = [];
                 $next = $this->listDirObjects($pfix, $recursive);
-                $dir["objects"] = array_merge($dir['objects'], $next['objects']);
+                $dir['objects'] = array_merge($dir['objects'], $next['objects']);
             }
         }
 

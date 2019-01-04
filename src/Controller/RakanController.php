@@ -24,11 +24,11 @@ class RakanController extends BaseController
         $where = [];
 
         $where[] = [
-            'path', $fileInfo['dirname']
+            'path', $fileInfo['dirname'],
         ];
 
         $where[] = [
-            'gateway', $gateway
+            'gateway', $gateway,
         ];
 
         $folder = File::where($where)->firstOrFail();
