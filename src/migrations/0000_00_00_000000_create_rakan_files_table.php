@@ -22,7 +22,7 @@ class CreateRakanFilesTable extends Migration
             $table->string('name')->comment('文件名');
             $table->string('gateway')->default('oss')->comment('文件名');
             $table->string('host')->nullable()->comment('地址');
-            $table->string('ext')->comment('文件 MineType');
+            $table->string('ext')->nullable()->comment('文件 MineType');
             $table->string('type')->default('folder')->comment('文件类别 文件或目录');
             $table->integer('size', false, true)->default(0)->comment('文件大小');
             $table->integer('width', false, true)->default(0)->comment('文件宽度');
