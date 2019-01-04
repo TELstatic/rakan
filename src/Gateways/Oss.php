@@ -181,6 +181,7 @@ class Oss implements GatewayApplicationInterface
     public function updateStream($path, $resource, Config $config)
     {
         $contents = stream_get_contents($resource);
+
         return $this->writeStream($path, $contents, $config);
     }
 
