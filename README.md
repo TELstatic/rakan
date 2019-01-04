@@ -391,6 +391,7 @@
 ### TIPS
 
 1. 配套前台 https://github.com/TELstatic/xayah
+2. 测试代码 https://github.com/TELstatic/RakanDemo
 
 <div id="thanks"></div>
 
