@@ -127,9 +127,9 @@ class Oss implements GatewayApplicationInterface
 
         $pos = strpos($path, '?');
         if ($pos === false) {
-            $authStr = urldecode($path).'\n'.$auth['body'];
+            $authStr = urldecode($path)."\n".$auth['body']; // '\n' 导致验证失败
         } else {
-            $authStr = urldecode(substr($path, 0, $pos)).substr($path, $pos, strlen($path) - $pos).'\n'.$auth['body'];
+            $authStr = urldecode(substr($path, 0, $pos)).substr($path, $pos, strlen($path) - $pos)."\n".$auth['body'];
         }
 
         $ok = openssl_verify($authStr, $authorization, $pubKey, OPENSSL_ALGO_MD5);

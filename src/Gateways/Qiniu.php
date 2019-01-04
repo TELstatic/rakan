@@ -43,7 +43,7 @@ class Qiniu implements GatewayApplicationInterface
         if (config('app.env') != 'local') {
             $policy = [
                 'callbackUrl'  => route('rakan.callback', ['gateway' => 'qiniu']),
-                'callbackBody' => '{"filename":"$(key)", "size":"$(fsize)","mimeType":"$(mimeType),"width":"$(imageInfo.width)","height":"$(imageInfo.height)"'
+                'callbackBody' => 'filename=$(key)&size=$(fsize)&mimeType=$(mimeType)&width=$(imageInfo.width)&height=$(imageInfo.height)'
             ];
         } else {
             $policy = [];
