@@ -14,6 +14,11 @@ class RakanAdapter extends AbstractAdapter
         $this->gateway = $gateway;
     }
 
+    public function base64($path, $data)
+    {
+        return app('rakan.'.$this->gateway)->base64($path, $data);
+    }
+
     public function write($path, $contents, Config $config)
     {
         return app('rakan.'.$this->gateway)->write($path, $contents, $config);

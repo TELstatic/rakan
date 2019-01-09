@@ -140,17 +140,30 @@ class Oss implements GatewayApplicationInterface
         }
     }
 
+    public function base64($path, $data)
+    {
+        if (preg_match('/^(data:\s*image\/(\w+);base64,)/', $data, $result)) {
+            $contents = base64_decode(substr($data, strpos($data, ",") + 1));
+
+            $config = new Config();
+
+            return $this->write($path, $contents, $config);
+        }
+
+        throw new \Exception('Invalid base64 str');
+    }
+
     public function write($path, $contents, Config $config)
     {
         try {
-            $this->client->putObject($this->bucket, $path, $contents);
+            $res = $this->client->putObject($this->bucket, $path, $contents);
         } catch (OssException $e) {
             Log::error($e->getMessage());
 
             return false;
         }
 
-        return true;
+        return trim($res['oss-request-url'], 'http:');
     }
 
     public function writeStream($path, $resource, Config $config)

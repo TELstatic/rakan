@@ -77,14 +77,17 @@ class Qiniu implements GatewayApplicationInterface
         }
     }
 
-    public function update($path, $contents, Config $config)
+    public function base64($path, $data)
     {
-        return $this->write($path, $contents, $config);
-    }
+        if (preg_match('/^(data:\s*image\/(\w+);base64,)/', $data, $result)) {
+            $contents = base64_decode(substr($data, strpos($data, ",") + 1));
 
-    public function updateStream($path, $resource, Config $config)
-    {
-        return $this->writeStream($path, $resource, $config);
+            $config = new Config();
+
+            return $this->write($path, $contents, $config);
+        }
+
+        throw new \Exception('Invalid base64 str');
     }
 
     public function write($path, $contents, Config $config)
@@ -96,7 +99,7 @@ class Qiniu implements GatewayApplicationInterface
         if ($error !== null) {
             return false;
         } else {
-            return $ret;
+            return $this->getUrl($ret['key']);
         }
     }
 
@@ -109,8 +112,18 @@ class Qiniu implements GatewayApplicationInterface
         if ($error !== null) {
             return false;
         } else {
-            return $ret;
+            return $this->getUrl($ret['key']);
         }
+    }
+
+    public function update($path, $contents, Config $config)
+    {
+        return $this->write($path, $contents, $config);
+    }
+
+    public function updateStream($path, $resource, Config $config)
+    {
+        return $this->writeStream($path, $resource, $config);
     }
 
     private function putFile($upToken, $key, $resource, $params = null, $mime = 'application/octet-stream', $checkCrc = false)
