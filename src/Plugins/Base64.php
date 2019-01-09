@@ -3,7 +3,6 @@
 namespace TELstatic\Rakan\Plugins;
 
 use League\Flysystem\Plugin\AbstractPlugin;
-use League\Flysystem\Config;
 
 /**
  * Base64字符串传文件.

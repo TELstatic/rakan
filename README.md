@@ -376,7 +376,15 @@
     
        Storage::disk('qiniu')->size('test/Paris.jpg');//获取文件大小
        Storage::disk('qiniu')->lastModified('test/Paris.jpg');//获取文件最后修改时间
+       
+       $file = '../public/images/faces/avatar3.jpg';
+       
+       $image_info = getimagesize($file);
+       $image_data = fread(fopen($file, 'r'), filesize($file));
+       $base64_image = 'data:'.$image_info['mime'].';base64,'.chunk_split(base64_encode($image_data));
 
+       Storage::disk('oss')->base64('avatars/avatarx.jpg', $base64_image);//base64 字符串上传
+               
 <div id="todo"></div>
 
 ### TODO

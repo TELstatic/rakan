@@ -143,7 +143,7 @@ class Oss implements GatewayApplicationInterface
     public function base64($path, $data)
     {
         if (preg_match('/^(data:\s*image\/(\w+);base64,)/', $data, $result)) {
-            $contents = base64_decode(substr($data, strpos($data, ",") + 1));
+            $contents = base64_decode(substr($data, strpos($data, ',') + 1));
 
             $config = new Config();
 
