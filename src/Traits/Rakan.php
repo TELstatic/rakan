@@ -107,7 +107,7 @@ trait Rakan
     /**
      * 获取文件及目录.
      */
-    public function getFiles($pid = 0, $per_page = 50)
+    public function getFiles($pid = 0, $per_page = 50, $keyword = null)
     {
         $where = [];
 
@@ -133,7 +133,13 @@ trait Rakan
             $parent = File::where($where)->first();
         }
 
-        $children = File::where(['pid' => $parent->id])->orderBy('sort', 'desc')->paginate($per_page);
+        if ($keyword) {
+            $parent = $this->getRootFolder();
+
+            $children = File::where('name', 'like', $keyword.'%')->orderBy('sort', 'desc')->paginate($per_page);
+        } else {
+            $children = File::where(['pid' => $parent->id])->orderBy('sort', 'desc')->paginate($per_page);
+        }
 
         $data = [
             'parent'   => $parent,
