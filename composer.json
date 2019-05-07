@@ -1,6 +1,6 @@
 {
   "name": "telstatic/rakan",
-  "description": "阿里云OSS配套插件",
+  "description": "Laravel 文件系统扩展,适配 阿里OSS,七牛云",
   "type": "library",
   "license": "MIT",
   "authors": [
@@ -12,7 +12,7 @@
   "minimum-stability": "dev",
   "require": {
     "php": "^7.1",
-    "hashids/hashids": "^3.0",
+    "hashids/hashids": "dev-master",
     "aliyuncs/oss-sdk-php": "^2.3",
     "league/flysystem": "^1.0",
     "qiniu/php-sdk": "dev-master"
