@@ -136,7 +136,7 @@ trait Rakan
         if ($keyword) {
             $parent = $this->getRootFolder();
 
-            $children = File::where('name', 'like', $keyword.'%')->orderBy('sort', 'desc')->paginate($per_page);
+            $children = File::where('target_id', $this->id)->where('name', 'like', $keyword.'%')->orderBy('sort', 'desc')->paginate($per_page);
         } else {
             $children = File::where(['pid' => $parent->id])->orderBy('sort', 'desc')->paginate($per_page);
         }
