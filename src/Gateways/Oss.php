@@ -35,6 +35,19 @@ class Oss implements GatewayApplicationInterface
         $this->client = new OssClient($this->accessKey, $this->secretKey, $this->endpoint);
     }
 
+    public function signature($file)
+    {
+        $expire = time() + $this->expire;
+
+        $StringToSign = "GET\n\n\n".$expire."\n/".$this->bucket."/".$file;
+
+        $Sign = base64_encode(hash_hmac("sha1", $StringToSign, $this->secretKey, true));
+
+        $url = $this->host.$file."?OSSAccessKeyId=".$this->accessKey."&Expires=".$expire."&Signature=".urlencode($Sign);
+
+        return $url;
+    }
+
     public function policy()
     {
         $callback_param = [

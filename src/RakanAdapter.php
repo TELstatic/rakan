@@ -14,6 +14,11 @@ class RakanAdapter extends AbstractAdapter
         $this->gateway = $gateway;
     }
 
+    public function signature($path)
+    {
+        return app('rakan.'.$this->gateway)->signature($path);
+    }
+
     public function base64($path, $data)
     {
         return app('rakan.'.$this->gateway)->base64($path, $data);

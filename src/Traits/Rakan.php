@@ -265,6 +265,349 @@ trait Rakan
     }
 
     /**
+     * 文件目录重命名.
+     */
+    public function rename($fileId, $name)
+    {
+        $file = File::where('target_id', $this->id)->findOrFail($fileId);
+
+        if ($file->type == 'file') {
+            $FilePath = pathinfo($file->path);
+            $newFilePath = rtrim($FilePath['dirname'], '/').'/'.$name;
+
+            $bool = Storage::disk($file->gateway)->rename($file->path, $newFilePath);
+
+            if ($bool) {
+                $file->name = $name;
+                $file->path = $newFilePath;
+                $file->visible = File::RAKAN_ACL_TYPE_PUBLIC_READ;
+
+                $file->save();
+
+                return [
+                    'status' => 200,
+                    'msg'    => '文件重命名成功',
+                ];
+            }
+
+            return [
+                'status' => 500,
+                'msg'    => '文件重命名失败',
+            ];
+        } else {
+            $folder = $file;
+
+            $folderInfo = pathinfo($folder->path);
+            //目录移动
+            $files = File::where('type', 'file')->where('path', 'like', $folder->path.'%')->get();
+
+            foreach ($files as $file) {
+                $newFilePath = str_replace($folder->path, rtrim($folderInfo['dirname'], '/').'/'.$name, $file->path);
+
+                //非同目录移动
+                if ($file->path !== $newFilePath) {
+                    $bool = Storage::disk($file->gateway)->move($file->path, $newFilePath);
+
+                    if ($bool) {
+                        $file->path = $newFilePath;
+                        $file->save();
+                    }
+                }
+            }
+
+            $folder->name = $name;
+            $folder->path = rtrim($folderInfo['dirname'], '/').'/'.$name;
+
+            $bool = $folder->save();
+
+            if ($bool) {
+                return [
+                    'status' => 200,
+                    'msg'    => '目录重命名成功',
+                ];
+            }
+
+            return [
+                'status' => 500,
+                'msg'    => '目录重命名失败',
+            ];
+        }
+    }
+
+    /**
+     * 文件目录复制.
+     */
+    public function copy($fileIds, $folderId)
+    {
+        $files = File::where('target_id', $this->id)->where('type', 'file')->whereIn('id', $fileIds)->get();
+
+        $folders = File::where('target_id', $this->id)->where('type', 'folder')->whereIn('id', $fileIds)->get();
+
+        $currentFolder = File::where('target_id', $this->id)->findOrFail($folderId);
+
+        DB::transaction(function () use ($files, $folders, $currentFolder) {
+            //文件复制
+            foreach ($files as $file) {
+                $newFilePath = rtrim($currentFolder->path, '/').'/'.$file->name;
+
+                //非同目录复制
+                if ($file->path !== $newFilePath) {
+                    //文件是否存在 存在跳过复制
+                    if (!Storage::disk($file->gateway)->exists($newFilePath)) {
+                        $bool = Storage::disk($file->gateway)->copy($file->path, $newFilePath);
+
+                        if ($bool) {
+                            if ($file->gateway == 'oss') {
+                                Storage::disk($file->gateway)->setVisibility($newFilePath, File::$rakanACLTypeMap[$file->attributes['visible']]);
+                            }
+
+                            File::create([
+                                'target_id' => $file->target_id,
+                                'pid'       => $currentFolder->id,
+                                'path'      => $newFilePath,
+                                'module'    => $file->module,
+                                'name'      => $file->name,
+                                'gateway'   => $file->gateway,
+                                'host'      => $file->host,
+                                'ext'       => $file->ext,
+                                'type'      => 'file',
+                                'size'      => $file->size,
+                                'width'     => $file->width,
+                                'height'    => $file->height,
+                                'sort'      => 0,
+                                'visible'   => $file->attributes['visible'],
+                            ]);
+                        }
+                    }
+                }
+            }
+
+            //目录复制
+            foreach ($folders as $folder) {
+                $files = File::where('type', 'file')->where('path', 'like', $folder->path.'%')->get();
+
+                foreach ($files as $file) {
+                    $folderInfo = pathinfo($folder->path);
+
+                    $newFilePath = rtrim($currentFolder->path, '/').'/'.str_replace($folderInfo['dirname'], '', $file->path);
+
+                    //非同目录复制
+                    if ($file->path !== $newFilePath) {
+                        $bool = Storage::disk($file->gateway)->copy($file->path, $newFilePath);
+
+                        if ($bool) {
+                            $pathInfo = pathinfo($newFilePath);
+
+                            $parentFolder = $this->getParentFolder($pathInfo['dirname'], $file->gateway);
+
+                            if ($file->gateway == 'oss') {
+                                Storage::disk($file->gateway)->setVisibility($newFilePath, File::$rakanACLTypeMap[$file->attributes['visible']]);
+                            }
+
+                            File::create([
+                                'target_id' => $file->target_id,
+                                'pid'       => $parentFolder->id,
+                                'path'      => $newFilePath,
+                                'module'    => $file->module,
+                                'name'      => $file->name,
+                                'gateway'   => $file->gateway,
+                                'host'      => $file->host,
+                                'ext'       => $file->ext,
+                                'type'      => 'file',
+                                'size'      => $file->size,
+                                'width'     => $file->width,
+                                'height'    => $file->height,
+                                'sort'      => 0,
+                                'visible'   => $file->attributes['visible'],
+                            ]);
+                        }
+                    }
+                }
+            }
+        });
+
+        return [
+            'status' => 200,
+            'msg'    => '文件目录复制成功',
+        ];
+    }
+
+    /**
+     * 文件目录移动.
+     */
+    public function cut($fileIds, $folderId)
+    {
+        $files = File::where('target_id', $this->id)->where('type', 'file')->whereIn('id', $fileIds)->get();
+
+        $folders = File::where('target_id', $this->id)->where('type', 'folder')->whereIn('id', $fileIds)->get();
+
+        $currentFolder = File::where('target_id', $this->id)->findOrFail($folderId);
+
+        DB::transaction(function () use ($files, $folders, $currentFolder) {
+            //文件移动
+            foreach ($files as $file) {
+                $newFilePath = rtrim($currentFolder->path, '/').'/'.$file->name;
+
+                //非同目录移动
+                if ($file->path !== $newFilePath) {
+                    $bool = Storage::disk($file->gateway)->move($file->path, $newFilePath);
+
+                    if ($bool) {
+                        if ($file->gateway == 'oss') {
+                            Storage::disk($file->gateway)->setVisibility($newFilePath, File::$rakanACLTypeMap[$file->attributes['visible']]);
+                        }
+
+                        File::create([
+                            'target_id' => $file->target_id,
+                            'pid'       => $currentFolder->id,
+                            'path'      => $newFilePath,
+                            'module'    => $file->module,
+                            'name'      => $file->name,
+                            'gateway'   => $file->gateway,
+                            'host'      => $file->host,
+                            'ext'       => $file->ext,
+                            'type'      => 'file',
+                            'size'      => $file->size,
+                            'width'     => $file->width,
+                            'height'    => $file->height,
+                            'sort'      => 0,
+                            'visible'   => $file->visible,
+                        ]);
+
+                        $file->delete();
+                    }
+                }
+            }
+
+            //目录移动
+            foreach ($folders as $folder) {
+                $files = File::where('type', 'file')->where('path', 'like', $folder->path.'%')->get();
+
+                foreach ($files as $file) {
+                    $folderInfo = pathinfo($folder->path);
+
+                    $newFilePath = rtrim($currentFolder->path, '/').'/'.str_replace($folderInfo['dirname'], '', $file->path);
+
+                    //非同目录移动
+                    if ($file->path !== $newFilePath) {
+                        $bool = Storage::disk($file->gateway)->move($file->path, $newFilePath);
+
+                        if ($bool) {
+                            $pathInfo = pathinfo($newFilePath);
+
+                            $parentFolder = $this->getParentFolder($pathInfo['dirname'], $file->gateway);
+
+                            if ($file->gateway == 'oss') {
+                                Storage::disk($file->gateway)->setVisibility($newFilePath, File::$rakanACLTypeMap[$file->attributes['visible']]);
+                            }
+
+                            File::create([
+                                'target_id' => $file->target_id,
+                                'pid'       => $parentFolder->id,
+                                'path'      => $newFilePath,
+                                'module'    => $file->module,
+                                'name'      => $file->name,
+                                'gateway'   => $file->gateway,
+                                'host'      => $file->host,
+                                'ext'       => $file->ext,
+                                'type'      => 'file',
+                                'size'      => $file->size,
+                                'width'     => $file->width,
+                                'height'    => $file->height,
+                                'sort'      => 0,
+                                'visible'   => $file->attributes['visible'],
+                            ]);
+
+                            $file->delete();
+                        }
+                    }
+                }
+
+                $folder->delete();
+            }
+        });
+
+        return [
+            'status' => 200,
+            'msg'    => '文件目录移动成功',
+        ];
+    }
+
+
+    /**
+     * 获取父级目录.
+     * @desc 不存在则使用递归创建目录
+     */
+    protected function getParentFolder($path, $gateway)
+    {
+        $where[] = [
+            'path', $path,
+        ];
+
+        $where[] = [
+            'gateway', $gateway,
+        ];
+
+        if ($folder = File::where($where)->first()) {
+            return $folder;
+        } else {
+            if (!$path) {
+                throw new \InvalidArgumentException('根目录不存在,请检查文件路径');
+            }
+
+            $parentFolder = $this->getParentFolder($this->getChildFolderPath($path), $gateway);
+
+            if ($folder = $this->generateFolder($path, $gateway, $parentFolder)) {
+                return $folder;
+            }
+        }
+    }
+
+    /**
+     * 获取子目录路径
+     * @desc
+     */
+    protected function getChildFolderPath($path)
+    {
+        $pathArr = explode('/', $path);
+
+        array_pop($pathArr);
+
+        $childFolder = implode('/', $pathArr);
+
+        return $childFolder;
+    }
+
+    /**
+     * 生成目录
+     * @desc
+     */
+    protected function generateFolder($path, $gateway, $folder)
+    {
+        $pathArr = explode('/', $path);
+
+        $data = [
+            'path'      => $path,
+            'size'      => 0,
+            'width'     => 0,
+            'height'    => 0,
+            'ext'       => null,
+            'name'      => end($pathArr),
+            'gateway'   => $gateway,
+            'host'      => $folder->host,
+            'module'    => $folder->module,
+            'target_id' => $folder->target_id,
+            'pid'       => $folder->id,
+            'sort'      => 0,
+            'type'      => 'folder',
+        ];
+
+        $file = File::create($data);
+
+        return $file;
+    }
+
+    /**
      * 删除文件.
      */
     protected function deleteObjects($objects)

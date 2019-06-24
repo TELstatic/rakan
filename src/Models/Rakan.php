@@ -3,6 +3,7 @@
 namespace TELstatic\Rakan\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class Rakan extends Model
 {
@@ -13,6 +14,16 @@ class Rakan extends Model
         $this->setTable(config('rakan.default.table_name'));
     }
 
+    const RAKAN_ACL_TYPE_PRIVATE = 0;
+    const RAKAN_ACL_TYPE_PUBLIC_READ = 1;
+    const RAKAN_ACL_TYPE_PUBLIC_READ_WRITE = 2;
+
+    public static $rakanACLTypeMap = [
+        self::RAKAN_ACL_TYPE_PRIVATE           => 'private',
+        self::RAKAN_ACL_TYPE_PUBLIC_READ       => 'public',
+        self::RAKAN_ACL_TYPE_PUBLIC_READ_WRITE => 'public_read_write',
+    ];
+
     protected $guarded = [];
 
     protected $appends = [
@@ -22,11 +33,18 @@ class Rakan extends Model
     public function getUrlAttribute()
     {
         if ($this->type === 'file') {
-            return rtrim($this->host, '/').'/'.$this->path;
+            if ($this->attributes['visible'] === self::RAKAN_ACL_TYPE_PRIVATE) {
+                $url = Storage::disk($this->gateway ?? 'oss')->signature($this->path);;
+            } else {
+                $url = rtrim($this->host, '/').'/'.$this->path;
+            }
+
+            return $this->removeSchemes($url);
         } else {
-            return;
+            return null;
         }
     }
+
 
     /**
      * 选中状态.
@@ -43,4 +61,15 @@ class Rakan extends Model
     {
         return 0;
     }
+
+    protected function removeSchemes($url)
+    {
+        $replaceList = [
+            'http:',
+            'https:',
+        ];
+
+        return str_replace($replaceList, '', $url);
+    }
+
 }

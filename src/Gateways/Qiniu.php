@@ -38,6 +38,11 @@ class Qiniu implements GatewayApplicationInterface
         $this->uploadManager = new UploadManager();
     }
 
+    public function signature($file)
+    {
+        return $this->auth->privateDownloadUrl(rtrim($this->host, '/').'/'.$file, $this->expire);
+    }
+
     public function policy()
     {
         if (config('app.env') != 'local') {
