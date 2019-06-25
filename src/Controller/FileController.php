@@ -3,7 +3,7 @@
  * Created by PhpStorm.
  * User: TELstatic
  * Date: 2019-06-24
- * Time: 16:47
+ * Time: 16:47.
  */
 
 namespace TELstatic\Rakan\Controller;
@@ -11,11 +11,10 @@ namespace TELstatic\Rakan\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
-use TELstatic\Rakan\Models\Rakan as File;
 
 /**
- * 文件管理
+ * 文件管理.
+ *
  * @desc 文件管理
  */
 class FileController extends BaseController
@@ -28,7 +27,8 @@ class FileController extends BaseController
     }
 
     /**
-     * 获取文件目录列表
+     * 获取文件目录列表.
+     *
      * @desc 获取文件目录列表
      */
     public function getFiles(Request $request)
@@ -37,7 +37,8 @@ class FileController extends BaseController
     }
 
     /**
-     * 设置文件权限
+     * 设置文件权限.
+     *
      * @desc
      */
     public function setVisible(Request $request)
@@ -47,7 +48,8 @@ class FileController extends BaseController
 
 
     /**
-     * 重命名文件
+     * 重命名文件.
+     *
      * @dec
      */
     public function rename(Request $request)
@@ -56,7 +58,8 @@ class FileController extends BaseController
     }
 
     /**
-     * 复制移动文件
+     * 复制移动文件.
+     *
      * @desc 复制移动文件
      */
     public function paste(Request $request)
@@ -73,9 +76,12 @@ class FileController extends BaseController
     }
 
     /**
-     * 创建目录
+     * 创建目录.
+     *
      * @desc 创建目录
+     *
      * @param $request
+     *
      * @return object
      */
     public function createFolder(Request $request)
@@ -84,9 +90,12 @@ class FileController extends BaseController
     }
 
     /**
-     * 删除文件
+     * 删除文件.
+     *
      * @desc 删除文件或目录
+     *
      * @param $request
+     *
      * @return object
      */
     public function deleteFiles(Request $request)
@@ -95,9 +104,12 @@ class FileController extends BaseController
     }
 
     /**
-     * 检查文件唯一
+     * 检查文件唯一.
+     *
      * @desc 确保文件唯一
+     *
      * @param $request
+     *
      * @return object
      */
     public function checkFile(Request $request)
@@ -106,8 +118,10 @@ class FileController extends BaseController
     }
 
     /**
-     * 获取上传策略
+     * 获取上传策略.
+     *
      * @desc 获取对象存储上传策略
+     *
      * @return object
      */
     public function getPolicy()

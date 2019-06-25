@@ -16,5 +16,4 @@ Route::group(['prefix' => 'rakan', 'namespace' => 'TELstatic\\Rakan\\Controller'
             Route::delete('batch', 'FileController@deleteFiles');   //删除文件目录
         });
     }
-
 });

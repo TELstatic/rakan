@@ -11,6 +11,7 @@ class RakanController extends BaseController
 {
     /**
      * 保存文件.
+     *
      * @param $request
      * @param $gateway
      * @return
@@ -18,7 +19,7 @@ class RakanController extends BaseController
     public function saveFile(Request $request, $gateway)
     {
         //非本地环境验证 合法性
-        if (config('app.env') !== 'local') {
+        if (config('app.env') === 'production') {
             Storage::disk($gateway)->verify();
         }
 
@@ -35,7 +36,8 @@ class RakanController extends BaseController
     }
 
     /**
-     * 获取父级目录
+     * 获取父级目录.
+     *
      * @desc 不存在则使用递归创建目录
      */
     protected function getParentFolder($path, $gateway)
@@ -65,6 +67,7 @@ class RakanController extends BaseController
 
     /**
      * 获取子目录路径
+     *
      * @desc
      */
     protected function getChildFolderPath($path)
@@ -79,7 +82,8 @@ class RakanController extends BaseController
     }
 
     /**
-     * 生成文件
+     * 生成文件.
+     *
      * @desc
      */
     protected function generateFile($request, $name, $gateway, $folder)
@@ -107,7 +111,8 @@ class RakanController extends BaseController
     }
 
     /**
-     * 生成目录
+     * 生成目录.
+     *
      * @desc
      */
     protected function generateFolder($path, $gateway, $folder)
