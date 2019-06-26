@@ -200,15 +200,26 @@ class Qiniu implements GatewayApplicationInterface
 
     public function delete($path)
     {
-        $error = $this->bucketManger->delete($this->bucket, $path);
+        if (is_string($path)) {
+            $error = $this->bucketManger->delete($this->bucket, $path);
 
-        if ($error !== null) {
-            Log::error($error);
+            if ($error !== null) {
+                Log::error($error);
 
+                return false;
+            }
+
+            return true;
+        } elseif (is_array($path)) {
+            $operations = $this->bucketManger::buildBatchDelete($this->bucket, $path);
+
+            //todo 测试
+            $res = $this->bucketManger->batch($operations);
+
+            return true;
+        } else {
             return false;
         }
-
-        return true;
     }
 
     public function deleteDir($dirname)
