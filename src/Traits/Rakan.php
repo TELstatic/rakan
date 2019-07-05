@@ -626,4 +626,29 @@ trait Rakan
     {
         return Storage::disk($this->gateway ?? config('rakan.default.gateway'))->policy();
     }
+
+    /**
+     * 增加引用次数.
+     * @desc
+     * @param $step integer 1
+     * @param $files array
+     * @return boolean
+     */
+    public function incrementUseTimes($step = 1, $files)
+    {
+        return File::whereIn('path', $files)->increment('use_times', $step);
+    }
+
+    /**
+     * 减少引用次数.
+     * @desc
+     * @param $step integer 1
+     * @param $files array
+     * @return boolean
+     */
+    public function decrementUseTimes($step = 1, $files)
+    {
+        return File::whereIn('path', $files)->decrement('use_times', $step);
+    }
+
 }
