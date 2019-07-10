@@ -166,6 +166,17 @@ class Oss implements GatewayApplicationInterface
         throw new \Exception('Invalid base64 str');
     }
 
+    public function symlink($symlink, $file)
+    {
+        $symlink = $this->client->putSymlink($this->bucket, $symlink, $file);
+
+        if ($symlink) {
+            return true;
+        }
+
+        return false;
+    }
+
     public function write($path, $contents, Config $config)
     {
         try {
@@ -314,7 +325,7 @@ class Oss implements GatewayApplicationInterface
     {
         $result = $this->readObject($path);
 
-        $result['contents'] = (string) $result['Body'];
+        $result['contents'] = (string)$result['Body'];
         unset($result['Body']);
 
         return $result;

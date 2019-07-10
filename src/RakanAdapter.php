@@ -133,4 +133,9 @@ class RakanAdapter extends AbstractAdapter
     {
         return app('rakan.'.$this->gateway)->getUrl($path);
     }
+
+    public function symlink($symlink, $file)
+    {
+        return app('rakan.'.$this->gateway)->symlink($symlink, $file);
+    }
 }
