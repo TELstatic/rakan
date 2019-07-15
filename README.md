@@ -2,6 +2,16 @@
 
 >Laravel 文件系统扩展包 + 文件管理系统
 
+<p align="center">
+    <img src="https://img.shields.io/packagist/v/telstatic/rakan.svg?style=flat-square" alt="licence" />
+    <img src="https://img.shields.io/packagist/l/telstatic/rakan.svg?style=flat-square" alt="licence" />
+    <img src="https://img.shields.io/github/languages/code-size/telstatic/rakan.svg?style=flat-square" alt="code size" />
+    <img src="https://img.shields.io/packagist/dt/telstatic/rakan.svg?style=flat-square" alt="downloads" />
+    <img src="https://img.shields.io/packagist/dm/telstatic/rakan.svg?style=flat-square" alt="downloads" />
+    <img src="https://img.shields.io/packagist/php-v/telstatic/rakan.svg?style=flat-square" alt="downloads" />
+    
+</p>
+
 >适配阿里云OSS,七牛云
 
 * [安装](#installation)

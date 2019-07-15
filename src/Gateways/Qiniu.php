@@ -43,11 +43,11 @@ class Qiniu implements GatewayApplicationInterface
         return $this->auth->privateDownloadUrl(rtrim($this->host, '/').'/'.$file, $this->expire);
     }
 
-    public function policy()
+    public function policy($route = 'rakan.callback')
     {
         if (config('app.env') != 'local') {
             $policy = [
-                'callbackUrl'  => route('rakan.callback', ['gateway' => 'qiniu']),
+                'callbackUrl'  => route($route, ['gateway' => 'qiniu', 'bucket' => $this->bucket]),
                 'callbackBody' => 'filename=$(key)&size=$(fsize)&mimeType=$(mimeType)&width=$(imageInfo.width)&height=$(imageInfo.height)',
             ];
         } else {
@@ -131,8 +131,14 @@ class Qiniu implements GatewayApplicationInterface
         return $this->writeStream($path, $resource, $config);
     }
 
-    private function putFile($upToken, $key, $resource, $params = null, $mime = 'application/octet-stream', $checkCrc = false)
-    {
+    private function putFile(
+        $upToken,
+        $key,
+        $resource,
+        $params = null,
+        $mime = 'application/octet-stream',
+        $checkCrc = false
+    ) {
         if ($resource === false) {
             throw new \Exception('file can not open', 1);
         }

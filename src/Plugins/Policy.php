@@ -14,8 +14,8 @@ class Policy extends AbstractPlugin
         return 'policy';
     }
 
-    public function handle()
+    public function handle($route = 'rakan.callback')
     {
-        return $this->filesystem->getAdapter()->policy();
+        return $this->filesystem->getAdapter()->policy($route);
     }
 }

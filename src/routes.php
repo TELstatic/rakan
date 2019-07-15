@@ -1,7 +1,7 @@
 <?php
 
 Route::group(['prefix' => 'rakan', 'namespace' => 'TELstatic\\Rakan\\Controller'], function () {
-    Route::post('callback/{gateway}', 'RakanController@saveFile')->name('rakan.callback');
+    Route::post('callback/{gateway}/{bucket?}', 'RakanController@saveFile')->name('rakan.callback');
 
     if (config('rakan.default.route')) {
         Route::group(['prefix' => 'file'], function () {

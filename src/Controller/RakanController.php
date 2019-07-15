@@ -16,7 +16,7 @@ class RakanController extends BaseController
      * @param $gateway
      * @return
      */
-    public function saveFile(Request $request, $gateway)
+    public function saveFile(Request $request, $gateway, $bucket = null)
     {
         //非本地环境验证 合法性
         if (config('app.env') === 'production') {
@@ -43,11 +43,13 @@ class RakanController extends BaseController
     protected function getParentFolder($path, $gateway)
     {
         $where[] = [
-            'path', $path,
+            'path',
+            $path,
         ];
 
         $where[] = [
-            'gateway', $gateway,
+            'gateway',
+            $gateway,
         ];
 
         if ($folder = File::where($where)->first()) {

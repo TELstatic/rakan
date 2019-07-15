@@ -23,35 +23,37 @@ class Oss implements GatewayApplicationInterface
 
     protected $options = [];
 
-    public function __construct()
+    public function config($config)
     {
-        $this->accessKey = config('rakan.gateways.oss.access_key');
-        $this->secretKey = config('rakan.gateways.oss.secret_key');
-        $this->host = config('rakan.gateways.oss.host');
-        $this->expire = config('rakan.gateways.oss.expire');
-        $this->endpoint = config('rakan.gateways.oss.endpoint');
-        $this->bucket = config('rakan.gateways.oss.bucket');
+        $this->accessKey = $config['access_key'] ?? config('rakan.gateways.oss.access_key');
+        $this->secretKey = $config['secret_key'] ?? config('rakan.gateways.oss.secret_key');
+        $this->host = $config['host'] ?? config('rakan.gateways.oss.host');
+        $this->expire = $config['expire'] ?? config('rakan.gateways.oss.expire');
+        $this->endpoint = $config['endpoint'] ?? config('rakan.gateways.oss.endpoint');
+        $this->bucket = $config['bucket'] ?? config('rakan.gateways.oss.bucket');
 
         $this->client = new OssClient($this->accessKey, $this->secretKey, $this->endpoint);
+
+        return $this;
     }
 
     public function signature($file)
     {
         $expire = time() + $this->expire;
 
-        $StringToSign = "GET\n\n\n".$expire."\n/".$this->bucket."/".$file;
+        $stringToSign = "GET\n\n\n".$expire."\n/".$this->bucket."/".$file;
 
-        $Sign = base64_encode(hash_hmac("sha1", $StringToSign, $this->secretKey, true));
+        $Sign = base64_encode(hash_hmac("sha1", $stringToSign, $this->secretKey, true));
 
         $url = $this->host.$file."?OSSAccessKeyId=".$this->accessKey."&Expires=".$expire."&Signature=".urlencode($Sign);
 
         return $url;
     }
 
-    public function policy()
+    public function policy($route = 'rakan.callback')
     {
         $callback_param = [
-            'callbackUrl'      => route('rakan.callback', ['gateway' => 'oss']),
+            'callbackUrl'      => route($route, ['gateway' => 'oss', 'bucket' => $this->bucket]),
             'callbackBody'     => 'filename=${object}&size=${size}&mimeType=${mimeType}&height=${imageInfo.height}&width=${imageInfo.width}',
             'callbackBodyType' => 'application/x-www-form-urlencoded',
         ];

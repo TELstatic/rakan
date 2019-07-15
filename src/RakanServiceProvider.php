@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\ServiceProvider;
 use League\Flysystem\Filesystem;
 use TELstatic\Rakan\Plugins\Base64;
+use TELstatic\Rakan\Plugins\Config;
 use TELstatic\Rakan\Plugins\Policy;
 use TELstatic\Rakan\Plugins\Signature;
 use TELstatic\Rakan\Plugins\Symlink;
@@ -54,6 +55,7 @@ class RakanServiceProvider extends ServiceProvider
             $filesystem->addPlugin(new Base64());
             $filesystem->addPlugin(new Signature());
             $filesystem->addPlugin(new Symlink());
+            $filesystem->addPlugin(new Config());
 
             return $filesystem;
         });
@@ -66,6 +68,7 @@ class RakanServiceProvider extends ServiceProvider
             $filesystem->addPlugin(new Policy());
             $filesystem->addPlugin(new Verify());
             $filesystem->addPlugin(new Base64());
+            $filesystem->addPlugin(new Config());
 
             return $filesystem;
         });
