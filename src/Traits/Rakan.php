@@ -15,6 +15,15 @@ trait Rakan
     public $module;
     public $gateway;
 
+    public function query()
+    {
+        if ($this->rakanTable) {
+            return (new File())->setTable($this->rakanTable);
+        }
+
+        return (new File());
+    }
+
     /**
      * 前缀.
      */
@@ -50,7 +59,8 @@ trait Rakan
      */
     protected function root()
     {
-        $hashids = new Hashids(config('rakan.hashids.salt'), config('rakan.hashids.length'), config('rakan.hashids.alphabet'));
+        $hashids = new Hashids(config('rakan.hashids.salt'), config('rakan.hashids.length'),
+            config('rakan.hashids.alphabet'));
 
         $root = $this->prefix ?? config('rakan.default.prefix').'/'.($this->module ?? config('rakan.default.module')).'/'.$hashids->encode($this->id);
 
@@ -80,26 +90,31 @@ trait Rakan
         $where = [];
 
         $where[] = [
-            'name', 'Root',
+            'name',
+            'Root',
         ];
 
         $where[] = [
-            'module', $this->module ?? config('rakan.default.module'),
+            'module',
+            $this->module ?? config('rakan.default.module'),
         ];
 
         $where[] = [
-            'target_id', $this->id,
+            'target_id',
+            $this->id,
         ];
 
         $where[] = [
-            'gateway', $this->gateway ?? config('rakan.default.gateway'),
+            'gateway',
+            $this->gateway ?? config('rakan.default.gateway'),
         ];
 
         $where[] = [
-            'path', $path,
+            'path',
+            $path,
         ];
 
-        $files = File::where($where)->firstOrCreate($data, $data);
+        $files = $this->query()->where($where)->firstOrCreate($data, $data);
 
         return $files;
     }
@@ -112,33 +127,38 @@ trait Rakan
         $where = [];
 
         $where[] = [
-            'module', $this->module ?? config('rakan.default.module'),
+            'module',
+            $this->module ?? config('rakan.default.module'),
         ];
 
         $where[] = [
-            'target_id', $this->id,
+            'target_id',
+            $this->id,
         ];
 
         if (!$pid) {
             $where[] = [
-                'pid', $pid,
+                'pid',
+                $pid,
             ];
 
             $parent = $this->getRootFolder();
         } else {
             $where[] = [
-                'id', $pid,
+                'id',
+                $pid,
             ];
             //todo should remove?
-            $parent = File::where($where)->first();
+            $parent = $this->query()->where($where)->first();
         }
 
         if ($keyword) {
             $parent = $this->getRootFolder();
 
-            $children = File::where('target_id', $this->id)->where('name', 'like', $keyword.'%')->orderBy('sort', 'desc')->paginate($per_page);
+            $children = $this->query()->where('target_id', $this->id)->where('name', 'like', $keyword.'%')->orderBy('sort',
+                'desc')->paginate($per_page);
         } else {
-            $children = File::where(['pid' => $parent->id])->orderBy('sort', 'desc')->paginate($per_page);
+            $children = $this->query()->where(['pid' => $parent->id])->orderBy('sort', 'desc')->paginate($per_page);
         }
 
         $data = [
@@ -154,27 +174,31 @@ trait Rakan
      */
     public function createFolder($pid, $name)
     {
-        $parent = File::findOrFail($pid);
+        $parent = $this->query()->findOrFail($pid);
 
         $where = [];
 
         $where[] = [
-            'pid', $pid,
+            'pid',
+            $pid,
         ];
 
         $where[] = [
-            'type', 'folder',
+            'type',
+            'folder',
         ];
 
         $where[] = [
-            'name', $name,
+            'name',
+            $name,
         ];
 
         $where[] = [
-            'gateway', $parent->gateway ?? config('rakan.default.gateway'),
+            'gateway',
+            $parent->gateway ?? config('rakan.default.gateway'),
         ];
 
-        $folder = File::where($where)->first();
+        $folder = $this->query()->where($where)->first();
 
         if ($folder) {
             return [
@@ -195,7 +219,7 @@ trait Rakan
             'sort'      => 255,
         ];
 
-        $bool = File::create($data);
+        $bool = $this->query()->create($data);
 
         return [
             'status' => $bool ? 200 : 500,
@@ -224,21 +248,24 @@ trait Rakan
         $where = [];
 
         $where[] = [
-            'target_id', $this->id,
+            'target_id',
+            $this->id,
         ];
 
-        $folders = File::where($where)->where(['type' => 'folder'])->whereIn('id', $ids)->pluck('path');
-        $files = File::where($where)->where(['type' => 'file'])->whereIn('id', $ids)->pluck('path')->toArray();
+        $folders = $this->query()->where($where)->where(['type' => 'folder'])->whereIn('id', $ids)->pluck('path');
+        $files = $this->query()->where($where)->where(['type' => 'file'])->whereIn('id', $ids)->pluck('path')->toArray();
 
         //检查目录下是否存在其他目录 或者 文件
         foreach ($folders as $folder) {
             $whereFolder = [];
 
             $whereFolder[] = [
-                'path', 'like', $folder.'%',
+                'path',
+                'like',
+                $folder.'%',
             ];
 
-            if (File::where($whereFolder)->count() > 1) {
+            if ($this->query()->where($whereFolder)->count() > 1) {
                 return [
                     'status' => 500,
                     'msg'    => '目录'.$folder.'不为空',
@@ -250,7 +277,7 @@ trait Rakan
         $bool = $this->deleteObjects($files);
 
         if ($bool) {
-            File::destroy($ids);
+            $this->query()->destroy($ids);
 
             return [
                 'status' => 200,
@@ -269,7 +296,7 @@ trait Rakan
      */
     public function rename($fileId, $name)
     {
-        $file = File::where('target_id', $this->id)->findOrFail($fileId);
+        $file = $this->query()->where('target_id', $this->id)->findOrFail($fileId);
 
         if ($file->type == 'file') {
             $FilePath = pathinfo($file->path);
@@ -299,7 +326,7 @@ trait Rakan
 
             $folderInfo = pathinfo($folder->path);
             //目录移动
-            $files = File::where('type', 'file')->where('path', 'like', $folder->path.'%')->get();
+            $files = $this->query()->where('type', 'file')->where('path', 'like', $folder->path.'%')->get();
 
             foreach ($files as $file) {
                 $newFilePath = str_replace($folder->path, rtrim($folderInfo['dirname'], '/').'/'.$name, $file->path);
@@ -339,11 +366,11 @@ trait Rakan
      */
     public function copy($fileIds, $folderId)
     {
-        $files = File::where('target_id', $this->id)->where('type', 'file')->whereIn('id', $fileIds)->get();
+        $files = $this->query()->where('target_id', $this->id)->where('type', 'file')->whereIn('id', $fileIds)->get();
 
-        $folders = File::where('target_id', $this->id)->where('type', 'folder')->whereIn('id', $fileIds)->get();
+        $folders = $this->query()->where('target_id', $this->id)->where('type', 'folder')->whereIn('id', $fileIds)->get();
 
-        $currentFolder = File::where('target_id', $this->id)->findOrFail($folderId);
+        $currentFolder = $this->query()->where('target_id', $this->id)->findOrFail($folderId);
 
         DB::transaction(function () use ($files, $folders, $currentFolder) {
             //文件复制
@@ -358,10 +385,11 @@ trait Rakan
 
                         if ($bool) {
                             if ($file->gateway == 'oss') {
-                                Storage::disk($file->gateway)->setVisibility($newFilePath, File::$rakanACLTypeMap[$file->attributes['visible']]);
+                                Storage::disk($file->gateway)->setVisibility($newFilePath,
+                                    File::$rakanACLTypeMap[$file->attributes['visible']]);
                             }
 
-                            File::create([
+                            $this->query()->create([
                                 'target_id' => $file->target_id,
                                 'pid'       => $currentFolder->id,
                                 'path'      => $newFilePath,
@@ -384,12 +412,13 @@ trait Rakan
 
             //目录复制
             foreach ($folders as $folder) {
-                $files = File::where('type', 'file')->where('path', 'like', $folder->path.'%')->get();
+                $files = $this->query()->where('type', 'file')->where('path', 'like', $folder->path.'%')->get();
 
                 foreach ($files as $file) {
                     $folderInfo = pathinfo($folder->path);
 
-                    $newFilePath = rtrim($currentFolder->path, '/').'/'.str_replace($folderInfo['dirname'], '', $file->path);
+                    $newFilePath = rtrim($currentFolder->path, '/').'/'.str_replace($folderInfo['dirname'], '',
+                            $file->path);
 
                     //非同目录复制
                     if ($file->path !== $newFilePath) {
@@ -401,10 +430,11 @@ trait Rakan
                             $parentFolder = $this->getParentFolder($pathInfo['dirname'], $file->gateway);
 
                             if ($file->gateway == 'oss') {
-                                Storage::disk($file->gateway)->setVisibility($newFilePath, File::$rakanACLTypeMap[$file->attributes['visible']]);
+                                Storage::disk($file->gateway)->setVisibility($newFilePath,
+                                    File::$rakanACLTypeMap[$file->attributes['visible']]);
                             }
 
-                            File::create([
+                            $this->query()->create([
                                 'target_id' => $file->target_id,
                                 'pid'       => $parentFolder->id,
                                 'path'      => $newFilePath,
@@ -437,11 +467,11 @@ trait Rakan
      */
     public function cut($fileIds, $folderId)
     {
-        $files = File::where('target_id', $this->id)->where('type', 'file')->whereIn('id', $fileIds)->get();
+        $files = $this->query()->where('target_id', $this->id)->where('type', 'file')->whereIn('id', $fileIds)->get();
 
-        $folders = File::where('target_id', $this->id)->where('type', 'folder')->whereIn('id', $fileIds)->get();
+        $folders = $this->query()->where('target_id', $this->id)->where('type', 'folder')->whereIn('id', $fileIds)->get();
 
-        $currentFolder = File::where('target_id', $this->id)->findOrFail($folderId);
+        $currentFolder = $this->query()->where('target_id', $this->id)->findOrFail($folderId);
 
         DB::transaction(function () use ($files, $folders, $currentFolder) {
             //文件移动
@@ -454,10 +484,11 @@ trait Rakan
 
                     if ($bool) {
                         if ($file->gateway == 'oss') {
-                            Storage::disk($file->gateway)->setVisibility($newFilePath, File::$rakanACLTypeMap[$file->attributes['visible']]);
+                            Storage::disk($file->gateway)->setVisibility($newFilePath,
+                                File::$rakanACLTypeMap[$file->attributes['visible']]);
                         }
 
-                        File::create([
+                        $this->query()->create([
                             'target_id' => $file->target_id,
                             'pid'       => $currentFolder->id,
                             'path'      => $newFilePath,
@@ -481,12 +512,13 @@ trait Rakan
 
             //目录移动
             foreach ($folders as $folder) {
-                $files = File::where('type', 'file')->where('path', 'like', $folder->path.'%')->get();
+                $files = $this->query()->where('type', 'file')->where('path', 'like', $folder->path.'%')->get();
 
                 foreach ($files as $file) {
                     $folderInfo = pathinfo($folder->path);
 
-                    $newFilePath = rtrim($currentFolder->path, '/').'/'.str_replace($folderInfo['dirname'], '', $file->path);
+                    $newFilePath = rtrim($currentFolder->path, '/').'/'.str_replace($folderInfo['dirname'], '',
+                            $file->path);
 
                     //非同目录移动
                     if ($file->path !== $newFilePath) {
@@ -498,10 +530,11 @@ trait Rakan
                             $parentFolder = $this->getParentFolder($pathInfo['dirname'], $file->gateway);
 
                             if ($file->gateway == 'oss') {
-                                Storage::disk($file->gateway)->setVisibility($newFilePath, File::$rakanACLTypeMap[$file->attributes['visible']]);
+                                Storage::disk($file->gateway)->setVisibility($newFilePath,
+                                    File::$rakanACLTypeMap[$file->attributes['visible']]);
                             }
 
-                            File::create([
+                            $this->query()->create([
                                 'target_id' => $file->target_id,
                                 'pid'       => $parentFolder->id,
                                 'path'      => $newFilePath,
@@ -541,14 +574,16 @@ trait Rakan
     protected function getParentFolder($path, $gateway)
     {
         $where[] = [
-            'path', $path,
+            'path',
+            $path,
         ];
 
         $where[] = [
-            'gateway', $gateway,
+            'gateway',
+            $gateway,
         ];
 
-        if ($folder = File::where($where)->first()) {
+        if ($folder = $this->query()->where($where)->first()) {
             return $folder;
         } else {
             if (!$path) {
@@ -602,7 +637,7 @@ trait Rakan
             'type'      => 'folder',
         ];
 
-        $file = File::create($data);
+        $file = $this->query()->create($data);
 
         return $file;
     }
@@ -636,7 +671,7 @@ trait Rakan
      */
     public function incrementUseTimes($step = 1, $files)
     {
-        return File::whereIn('path', $files)->increment('use_times', $step);
+        return $this->query()->whereIn('path', $files)->increment('use_times', $step);
     }
 
     /**
@@ -648,7 +683,7 @@ trait Rakan
      */
     public function decrementUseTimes($step = 1, $files)
     {
-        return File::whereIn('path', $files)->decrement('use_times', $step);
+        return $this->query()->whereIn('path', $files)->decrement('use_times', $step);
     }
 
 }
