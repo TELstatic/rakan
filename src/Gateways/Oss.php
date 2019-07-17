@@ -251,16 +251,18 @@ class Oss implements GatewayApplicationInterface
         if (is_string($path)) {
             try {
                 $this->client->deleteObject($this->bucket, $path);
+
+                return true;
             } catch (OssException $e) {
                 Log::error($e->getMessage());
 
                 return false;
             }
-
-            return !$this->has($path);
         } elseif (is_array($path)) {
             try {
                 $this->client->deleteObjects($this->bucket, $path);
+
+                return true;
             } catch (OssException $e) {
                 Log::error($e->getMessage());
 

@@ -15,7 +15,7 @@ trait Rakan
     public $module;
     public $gateway;
 
-    public function query()
+    public function search()
     {
         if ($this->rakanTable) {
             return (new File())->setTable($this->rakanTable);
@@ -75,13 +75,15 @@ trait Rakan
     {
         $path = $this->root();
 
+        $host = $this->config['host'] ?? config('rakan.gateways.'.($this->gateway ?? config('rakan.default.gateway')).'.host');
+
         $data = [
             'pid'       => 0,
             'path'      => $path,
             'name'      => 'Root',
             'module'    => $this->module ?? config('rakan.default.module'),
             'gateway'   => $this->gateway ?? config('rakan.default.gateway'),
-            'host'      => config('rakan.gateways.'.($this->gateway ?? config('rakan.default.gateway')).'.host'),
+            'host'      => $host,
             'target_id' => $this->id,
             'type'      => 'folder',
             'sort'      => 255,
@@ -114,7 +116,7 @@ trait Rakan
             $path,
         ];
 
-        $files = $this->query()->where($where)->firstOrCreate($data, $data);
+        $files = $this->search()->where($where)->firstOrCreate($data, $data);
 
         return $files;
     }
@@ -149,16 +151,17 @@ trait Rakan
                 $pid,
             ];
             //todo should remove?
-            $parent = $this->query()->where($where)->first();
+            $parent = $this->search()->where($where)->first();
         }
 
         if ($keyword) {
             $parent = $this->getRootFolder();
 
-            $children = $this->query()->where('target_id', $this->id)->where('name', 'like', $keyword.'%')->orderBy('sort',
+            $children = $this->search()->where('target_id', $this->id)->where('name', 'like',
+                $keyword.'%')->orderBy('sort',
                 'desc')->paginate($per_page);
         } else {
-            $children = $this->query()->where(['pid' => $parent->id])->orderBy('sort', 'desc')->paginate($per_page);
+            $children = $this->search()->where(['pid' => $parent->id])->orderBy('sort', 'desc')->paginate($per_page);
         }
 
         $data = [
@@ -174,7 +177,7 @@ trait Rakan
      */
     public function createFolder($pid, $name)
     {
-        $parent = $this->query()->findOrFail($pid);
+        $parent = $this->search()->findOrFail($pid);
 
         $where = [];
 
@@ -198,7 +201,7 @@ trait Rakan
             $parent->gateway ?? config('rakan.default.gateway'),
         ];
 
-        $folder = $this->query()->where($where)->first();
+        $folder = $this->search()->where($where)->first();
 
         if ($folder) {
             return [
@@ -219,7 +222,7 @@ trait Rakan
             'sort'      => 255,
         ];
 
-        $bool = $this->query()->create($data);
+        $bool = $this->search()->create($data);
 
         return [
             'status' => $bool ? 200 : 500,
@@ -252,8 +255,9 @@ trait Rakan
             $this->id,
         ];
 
-        $folders = $this->query()->where($where)->where(['type' => 'folder'])->whereIn('id', $ids)->pluck('path');
-        $files = $this->query()->where($where)->where(['type' => 'file'])->whereIn('id', $ids)->pluck('path')->toArray();
+        $folders = $this->search()->where($where)->where(['type' => 'folder'])->whereIn('id', $ids)->pluck('path');
+        $files = $this->search()->where($where)->where(['type' => 'file'])->whereIn('id',
+            $ids)->pluck('path')->toArray();
 
         //检查目录下是否存在其他目录 或者 文件
         foreach ($folders as $folder) {
@@ -265,7 +269,7 @@ trait Rakan
                 $folder.'%',
             ];
 
-            if ($this->query()->where($whereFolder)->count() > 1) {
+            if ($this->search()->where($whereFolder)->count() > 1) {
                 return [
                     'status' => 500,
                     'msg'    => '目录'.$folder.'不为空',
@@ -277,7 +281,7 @@ trait Rakan
         $bool = $this->deleteObjects($files);
 
         if ($bool) {
-            $this->query()->destroy($ids);
+            $this->search()->destroy($ids);
 
             return [
                 'status' => 200,
@@ -296,7 +300,7 @@ trait Rakan
      */
     public function rename($fileId, $name)
     {
-        $file = $this->query()->where('target_id', $this->id)->findOrFail($fileId);
+        $file = $this->search()->where('target_id', $this->id)->findOrFail($fileId);
 
         if ($file->type == 'file') {
             $FilePath = pathinfo($file->path);
@@ -326,7 +330,7 @@ trait Rakan
 
             $folderInfo = pathinfo($folder->path);
             //目录移动
-            $files = $this->query()->where('type', 'file')->where('path', 'like', $folder->path.'%')->get();
+            $files = $this->search()->where('type', 'file')->where('path', 'like', $folder->path.'%')->get();
 
             foreach ($files as $file) {
                 $newFilePath = str_replace($folder->path, rtrim($folderInfo['dirname'], '/').'/'.$name, $file->path);
@@ -366,11 +370,12 @@ trait Rakan
      */
     public function copy($fileIds, $folderId)
     {
-        $files = $this->query()->where('target_id', $this->id)->where('type', 'file')->whereIn('id', $fileIds)->get();
+        $files = $this->search()->where('target_id', $this->id)->where('type', 'file')->whereIn('id', $fileIds)->get();
 
-        $folders = $this->query()->where('target_id', $this->id)->where('type', 'folder')->whereIn('id', $fileIds)->get();
+        $folders = $this->search()->where('target_id', $this->id)->where('type', 'folder')->whereIn('id',
+            $fileIds)->get();
 
-        $currentFolder = $this->query()->where('target_id', $this->id)->findOrFail($folderId);
+        $currentFolder = $this->search()->where('target_id', $this->id)->findOrFail($folderId);
 
         DB::transaction(function () use ($files, $folders, $currentFolder) {
             //文件复制
@@ -389,7 +394,7 @@ trait Rakan
                                     File::$rakanACLTypeMap[$file->attributes['visible']]);
                             }
 
-                            $this->query()->create([
+                            $this->search()->create([
                                 'target_id' => $file->target_id,
                                 'pid'       => $currentFolder->id,
                                 'path'      => $newFilePath,
@@ -412,7 +417,7 @@ trait Rakan
 
             //目录复制
             foreach ($folders as $folder) {
-                $files = $this->query()->where('type', 'file')->where('path', 'like', $folder->path.'%')->get();
+                $files = $this->search()->where('type', 'file')->where('path', 'like', $folder->path.'%')->get();
 
                 foreach ($files as $file) {
                     $folderInfo = pathinfo($folder->path);
@@ -434,7 +439,7 @@ trait Rakan
                                     File::$rakanACLTypeMap[$file->attributes['visible']]);
                             }
 
-                            $this->query()->create([
+                            $this->search()->create([
                                 'target_id' => $file->target_id,
                                 'pid'       => $parentFolder->id,
                                 'path'      => $newFilePath,
@@ -467,11 +472,12 @@ trait Rakan
      */
     public function cut($fileIds, $folderId)
     {
-        $files = $this->query()->where('target_id', $this->id)->where('type', 'file')->whereIn('id', $fileIds)->get();
+        $files = $this->search()->where('target_id', $this->id)->where('type', 'file')->whereIn('id', $fileIds)->get();
 
-        $folders = $this->query()->where('target_id', $this->id)->where('type', 'folder')->whereIn('id', $fileIds)->get();
+        $folders = $this->search()->where('target_id', $this->id)->where('type', 'folder')->whereIn('id',
+            $fileIds)->get();
 
-        $currentFolder = $this->query()->where('target_id', $this->id)->findOrFail($folderId);
+        $currentFolder = $this->search()->where('target_id', $this->id)->findOrFail($folderId);
 
         DB::transaction(function () use ($files, $folders, $currentFolder) {
             //文件移动
@@ -488,7 +494,7 @@ trait Rakan
                                 File::$rakanACLTypeMap[$file->attributes['visible']]);
                         }
 
-                        $this->query()->create([
+                        $this->search()->create([
                             'target_id' => $file->target_id,
                             'pid'       => $currentFolder->id,
                             'path'      => $newFilePath,
@@ -512,7 +518,7 @@ trait Rakan
 
             //目录移动
             foreach ($folders as $folder) {
-                $files = $this->query()->where('type', 'file')->where('path', 'like', $folder->path.'%')->get();
+                $files = $this->search()->where('type', 'file')->where('path', 'like', $folder->path.'%')->get();
 
                 foreach ($files as $file) {
                     $folderInfo = pathinfo($folder->path);
@@ -534,7 +540,7 @@ trait Rakan
                                     File::$rakanACLTypeMap[$file->attributes['visible']]);
                             }
 
-                            $this->query()->create([
+                            $this->search()->create([
                                 'target_id' => $file->target_id,
                                 'pid'       => $parentFolder->id,
                                 'path'      => $newFilePath,
@@ -583,7 +589,7 @@ trait Rakan
             $gateway,
         ];
 
-        if ($folder = $this->query()->where($where)->first()) {
+        if ($folder = $this->search()->where($where)->first()) {
             return $folder;
         } else {
             if (!$path) {
@@ -637,7 +643,7 @@ trait Rakan
             'type'      => 'folder',
         ];
 
-        $file = $this->query()->create($data);
+        $file = $this->search()->create($data);
 
         return $file;
     }
@@ -651,15 +657,15 @@ trait Rakan
             return true;
         }
 
-        return Storage::disk($this->gateway ?? config('rakan.default.gateway'))->delete($objects);
+        return Storage::disk($this->gateway ?? config('rakan.default.gateway'))->config($this->config)->delete($objects);
     }
 
     /**
      * 获取上传策略.
      */
-    public function getPolicy()
+    public function getPolicy($route = 'rakan.callback')
     {
-        return Storage::disk($this->gateway ?? config('rakan.default.gateway'))->policy();
+        return Storage::disk($this->gateway ?? config('rakan.default.gateway'))->config($this->config)->policy($route);
     }
 
     /**
@@ -671,7 +677,7 @@ trait Rakan
      */
     public function incrementUseTimes($step = 1, $files)
     {
-        return $this->query()->whereIn('path', $files)->increment('use_times', $step);
+        return $this->search()->whereIn('path', $files)->increment('use_times', $step);
     }
 
     /**
@@ -683,7 +689,7 @@ trait Rakan
      */
     public function decrementUseTimes($step = 1, $files)
     {
-        return $this->query()->whereIn('path', $files)->decrement('use_times', $step);
+        return $this->search()->whereIn('path', $files)->decrement('use_times', $step);
     }
 
 }
