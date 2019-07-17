@@ -16,6 +16,6 @@ class Config extends AbstractPlugin
 
     public function handle($config)
     {
-        return $this->filesystem->getAdapter()->copfig($config);
+        return $this->filesystem->getAdapter()->config($config);
     }
 }
