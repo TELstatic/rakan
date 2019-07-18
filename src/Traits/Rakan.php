@@ -236,7 +236,7 @@ trait Rakan
      */
     public function checkFile($path)
     {
-        $bool = Storage::disk($this->gateway ?? config('rakan.default.gateway'))->exists($path);
+        $bool = Storage::disk($this->gateway ?? config('rakan.default.gateway'))->config($this->config)->exists($path);
 
         return [
             'status' => $bool ? 500 : 200,

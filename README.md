@@ -3,6 +3,7 @@
 >Laravel 文件系统扩展包 + 文件管理系统
 
 <p align="center">
+    <img src="https://github.styleci.io/repos/137040717/shield?branch=master" alt="StyleCI Shield">
     <img src="https://img.shields.io/packagist/v/telstatic/rakan.svg?style=flat-square" alt="licence" />
     <img src="https://img.shields.io/packagist/l/telstatic/rakan.svg?style=flat-square" alt="licence" />
     <img src="https://img.shields.io/github/languages/code-size/telstatic/rakan.svg?style=flat-square" alt="code size" />
