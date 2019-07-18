@@ -33,7 +33,8 @@ class FileController extends BaseController
      */
     public function getFiles(Request $request)
     {
-        return Auth::guard($this->gurad)->user()->getFiles($request->get('pid', 0), $request->get('per_page', 50), $request->get('keyword'));
+        return Auth::guard($this->gurad)->user()->getFiles($request->get('pid', 0), $request->get('per_page', 50),
+            $request->get('keyword'));
     }
 
     /**
@@ -45,7 +46,6 @@ class FileController extends BaseController
     {
         return Auth::guard($this->guard)->user()->setACL($request->get('id'), $request->get('visible', 1));
     }
-
 
     /**
      * 重命名文件.
@@ -128,5 +128,4 @@ class FileController extends BaseController
     {
         return Auth::guard($this->guard)->user()->getPolicy();
     }
-
 }

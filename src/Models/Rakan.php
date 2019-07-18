@@ -27,24 +27,25 @@ class Rakan extends Model
     protected $guarded = [];
 
     protected $appends = [
-        'url', 'checked', 'order',
+        'url',
+        'checked',
+        'order',
     ];
 
     public function getUrlAttribute()
     {
         if ($this->type === 'file') {
             if ($this->attributes['visible'] === self::RAKAN_ACL_TYPE_PRIVATE) {
-                $url = Storage::disk($this->gateway ?? 'oss')->signature($this->path);;
+                $url = Storage::disk($this->gateway ?? 'oss')->signature($this->path);
             } else {
                 $url = rtrim($this->host, '/').'/'.$this->path;
             }
 
             return $this->removeSchemes($url);
         } else {
-            return null;
+            return '';
         }
     }
-
 
     /**
      * 选中状态.
@@ -71,5 +72,4 @@ class Rakan extends Model
 
         return str_replace($replaceList, '', $url);
     }
-
 }

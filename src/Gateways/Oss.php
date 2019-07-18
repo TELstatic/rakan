@@ -41,11 +41,11 @@ class Oss implements GatewayApplicationInterface
     {
         $expire = time() + $this->expire;
 
-        $stringToSign = "GET\n\n\n".$expire."\n/".$this->bucket."/".$file;
+        $stringToSign = "GET\n\n\n".$expire."\n/".$this->bucket.'/'.$file;
 
-        $Sign = base64_encode(hash_hmac("sha1", $stringToSign, $this->secretKey, true));
+        $sign = base64_encode(hash_hmac('sha1', $stringToSign, $this->secretKey, true));
 
-        $url = $this->host.$file."?OSSAccessKeyId=".$this->accessKey."&Expires=".$expire."&Signature=".urlencode($Sign);
+        $url = $this->host.$file.'?OSSAccessKeyId='.$this->accessKey.'&Expires='.$expire.'&Signature='.urlencode($sign);
 
         return $url;
     }
@@ -329,7 +329,7 @@ class Oss implements GatewayApplicationInterface
     {
         $result = $this->readObject($path);
 
-        $result['contents'] = (string)$result['Body'];
+        $result['contents'] = (string) $result['Body'];
         unset($result['Body']);
 
         return $result;

@@ -68,7 +68,7 @@ class RakanController extends BaseController
     }
 
     /**
-     * 获取子目录路径
+     * 获取子目录路径.
      *
      * @desc
      */
@@ -141,5 +141,4 @@ class RakanController extends BaseController
 
         return $file;
     }
-
 }

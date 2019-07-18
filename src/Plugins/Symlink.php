@@ -3,7 +3,7 @@
  * Created by PhpStorm.
  * User: TELstatic
  * Date: 2019-07-10
- * Time: 8:36
+ * Time: 8:36.
  */
 
 namespace TELstatic\Rakan\Plugins;

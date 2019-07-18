@@ -22,7 +22,7 @@ trait Rakan
             return (new File())->setTable($this->rakanTable);
         }
 
-        return (new File());
+        return new File();
     }
 
     /**
@@ -275,7 +275,6 @@ trait Rakan
                     'status' => 500,
                     'msg'    => '目录'.$folder.'不为空',
                 ];
-                break;
             }
         }
 
@@ -557,6 +556,7 @@ trait Rakan
 
     /**
      * 获取父级目录.
+     *
      * @desc 不存在则使用递归创建目录
      */
     protected function getParentFolder($path, $gateway)
@@ -587,7 +587,8 @@ trait Rakan
     }
 
     /**
-     * 获取子目录路径
+     * 获取子目录路径.
+     *
      * @desc
      */
     protected function getChildFolderPath($path)
@@ -602,7 +603,8 @@ trait Rakan
     }
 
     /**
-     * 生成目录
+     * 生成目录.
+     *
      * @desc
      */
     protected function generateFolder($path, $gateway, $folder)
@@ -661,6 +663,7 @@ trait Rakan
 
     /**
      * 增加引用次数.
+     *
      * @desc
      * @param $step integer 1
      * @param $files array
@@ -673,6 +676,7 @@ trait Rakan
 
     /**
      * 减少引用次数.
+     *
      * @desc
      * @param $step integer 1
      * @param $files array
@@ -682,5 +686,4 @@ trait Rakan
     {
         return $this->search()->whereIn('path', $files)->decrement('use_times', $step);
     }
-
 }
