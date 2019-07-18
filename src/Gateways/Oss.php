@@ -224,19 +224,19 @@ class Oss implements GatewayApplicationInterface
         return $this->writeStream($path, $contents, $config);
     }
 
-    public function rename($path, $newpath)
+    public function rename($path, $newPath)
     {
-        if (!$this->copy($path, $newpath)) {
+        if (!$this->copy($path, $newPath)) {
             return false;
         }
 
         return $this->delete($path);
     }
 
-    public function copy($path, $newpath)
+    public function copy($path, $newPath)
     {
         try {
-            $this->client->copyObject($this->bucket, $path, $this->bucket, $newpath);
+            $this->client->copyObject($this->bucket, $path, $this->bucket, $newPath);
 
             return true;
         } catch (OssException $e) {
@@ -439,9 +439,13 @@ class Oss implements GatewayApplicationInterface
     public function setVisibility($path, $visibility)
     {
         $acl = ($visibility === AdapterInterface::VISIBILITY_PUBLIC) ? 'public-read' : 'private';
-        $this->client->putBucketAcl($this->bucket, $acl);
+        $res = $this->client->putBucketAcl($this->bucket, $acl);
 
-        return compact('visibility');
+        if ($res) {
+            return true;
+        }
+
+        return false;
     }
 
     public function listDirObjects($dirname = '', $recursive = false)

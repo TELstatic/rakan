@@ -3,6 +3,7 @@
 namespace TELstatic\Rakan\Traits;
 
 use Hashids\Hashids;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use TELstatic\Rakan\Models\Rakan as File;
 
@@ -281,7 +282,7 @@ trait Rakan
         $bool = $this->deleteObjects($files);
 
         if ($bool) {
-            $this->search()->destroy($ids);
+            $this->search()->whereIn('id', $ids)->delete();
 
             return [
                 'status' => 200,
@@ -306,7 +307,7 @@ trait Rakan
             $FilePath = pathinfo($file->path);
             $newFilePath = rtrim($FilePath['dirname'], '/').'/'.$name;
 
-            $bool = Storage::disk($file->gateway)->rename($file->path, $newFilePath);
+            $bool = Storage::disk($file->gateway)->config($this->config)->rename($file->path, $newFilePath);
 
             if ($bool) {
                 $file->name = $name;
@@ -337,7 +338,7 @@ trait Rakan
 
                 //非同目录移动
                 if ($file->path !== $newFilePath) {
-                    $bool = Storage::disk($file->gateway)->move($file->path, $newFilePath);
+                    $bool = Storage::disk($file->gateway)->config($this->config)->move($file->path, $newFilePath);
 
                     if ($bool) {
                         $file->path = $newFilePath;
@@ -385,15 +386,10 @@ trait Rakan
                 //非同目录复制
                 if ($file->path !== $newFilePath) {
                     //文件是否存在 存在跳过复制
-                    if (!Storage::disk($file->gateway)->exists($newFilePath)) {
-                        $bool = Storage::disk($file->gateway)->copy($file->path, $newFilePath);
+                    if (!Storage::disk($file->gateway)->config($this->config)->exists($newFilePath)) {
+                        $bool = Storage::disk($file->gateway)->config($this->config)->copy($file->path, $newFilePath);
 
                         if ($bool) {
-                            if ($file->gateway == 'oss') {
-                                Storage::disk($file->gateway)->setVisibility($newFilePath,
-                                    File::$rakanACLTypeMap[$file->attributes['visible']]);
-                            }
-
                             $this->search()->create([
                                 'target_id' => $file->target_id,
                                 'pid'       => $currentFolder->id,
@@ -408,7 +404,7 @@ trait Rakan
                                 'width'     => $file->width,
                                 'height'    => $file->height,
                                 'sort'      => 0,
-                                'visible'   => $file->attributes['visible'],
+                                'visible'   => $file->attributes['visible'] ?? $this->config['acl'] ?? File::RAKAN_ACL_TYPE_PUBLIC_READ,
                             ]);
                         }
                     }
@@ -422,22 +418,17 @@ trait Rakan
                 foreach ($files as $file) {
                     $folderInfo = pathinfo($folder->path);
 
-                    $newFilePath = rtrim($currentFolder->path, '/').'/'.str_replace($folderInfo['dirname'], '',
+                    $newFilePath = rtrim($currentFolder->path, '/').str_replace($folderInfo['dirname'], '',
                             $file->path);
 
                     //非同目录复制
                     if ($file->path !== $newFilePath) {
-                        $bool = Storage::disk($file->gateway)->copy($file->path, $newFilePath);
+                        $bool = Storage::disk($file->gateway)->config($this->config)->copy($file->path, $newFilePath);
 
                         if ($bool) {
                             $pathInfo = pathinfo($newFilePath);
 
                             $parentFolder = $this->getParentFolder($pathInfo['dirname'], $file->gateway);
-
-                            if ($file->gateway == 'oss') {
-                                Storage::disk($file->gateway)->setVisibility($newFilePath,
-                                    File::$rakanACLTypeMap[$file->attributes['visible']]);
-                            }
 
                             $this->search()->create([
                                 'target_id' => $file->target_id,
@@ -453,7 +444,7 @@ trait Rakan
                                 'width'     => $file->width,
                                 'height'    => $file->height,
                                 'sort'      => 0,
-                                'visible'   => $file->attributes['visible'],
+                                'visible'   => $file->attributes['visible'] ?? $this->config['acl'] ?? File::RAKAN_ACL_TYPE_PUBLIC_READ,
                             ]);
                         }
                     }
@@ -486,13 +477,9 @@ trait Rakan
 
                 //非同目录移动
                 if ($file->path !== $newFilePath) {
-                    $bool = Storage::disk($file->gateway)->move($file->path, $newFilePath);
+                    $bool = Storage::disk($file->gateway)->config($this->config)->move($file->path, $newFilePath);
 
                     if ($bool) {
-                        if ($file->gateway == 'oss') {
-                            Storage::disk($file->gateway)->setVisibility($newFilePath,
-                                File::$rakanACLTypeMap[$file->attributes['visible']]);
-                        }
 
                         $this->search()->create([
                             'target_id' => $file->target_id,
@@ -508,7 +495,7 @@ trait Rakan
                             'width'     => $file->width,
                             'height'    => $file->height,
                             'sort'      => 0,
-                            'visible'   => $file->visible,
+                            'visible'   => $file->attributes['visible'] ?? $this->config['acl'] ?? File::RAKAN_ACL_TYPE_PUBLIC_READ,
                         ]);
 
                         $file->delete();
@@ -523,22 +510,17 @@ trait Rakan
                 foreach ($files as $file) {
                     $folderInfo = pathinfo($folder->path);
 
-                    $newFilePath = rtrim($currentFolder->path, '/').'/'.str_replace($folderInfo['dirname'], '',
+                    $newFilePath = rtrim($currentFolder->path, '/').str_replace($folderInfo['dirname'], '',
                             $file->path);
 
                     //非同目录移动
                     if ($file->path !== $newFilePath) {
-                        $bool = Storage::disk($file->gateway)->move($file->path, $newFilePath);
+                        $bool = Storage::disk($file->gateway)->config($this->config)->move($file->path, $newFilePath);
 
                         if ($bool) {
                             $pathInfo = pathinfo($newFilePath);
 
                             $parentFolder = $this->getParentFolder($pathInfo['dirname'], $file->gateway);
-
-                            if ($file->gateway == 'oss') {
-                                Storage::disk($file->gateway)->setVisibility($newFilePath,
-                                    File::$rakanACLTypeMap[$file->attributes['visible']]);
-                            }
 
                             $this->search()->create([
                                 'target_id' => $file->target_id,
@@ -554,7 +536,7 @@ trait Rakan
                                 'width'     => $file->width,
                                 'height'    => $file->height,
                                 'sort'      => 0,
-                                'visible'   => $file->attributes['visible'],
+                                'visible'   => $file->attributes['visible'] ?? $this->config['acl'] ?? File::RAKAN_ACL_TYPE_PUBLIC_READ,
                             ]);
 
                             $file->delete();
@@ -646,6 +628,15 @@ trait Rakan
         $file = $this->search()->create($data);
 
         return $file;
+    }
+
+    /**
+     * 设置文件访问权限.
+     */
+    public function setACL($path, $visibility = 1)
+    {
+        return Storage::disk($this->gateway ?? config('rakan.default.gateway'))->config($this->config)->setVisibility($path,
+            $visibility);
     }
 
     /**

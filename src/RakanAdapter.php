@@ -73,6 +73,11 @@ class RakanAdapter extends AbstractAdapter
         return app('rakan.'.$this->gateway)->config($this->config)->rename($path, $newpath);
     }
 
+    public function move($path, $newpath)
+    {
+        return app('rakan.'.$this->gateway)->config($this->config)->rename($path, $newpath);
+    }
+
     public function delete($path)
     {
         return app('rakan.'.$this->gateway)->config($this->config)->delete($path);
