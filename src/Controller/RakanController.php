@@ -14,7 +14,8 @@ class RakanController extends BaseController
      *
      * @param $request
      * @param $gateway
-     * @return
+     *
+     * @return object
      */
     public function saveFile(Request $request, $gateway, $bucket = null)
     {

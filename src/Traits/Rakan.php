@@ -479,7 +479,6 @@ trait Rakan
                     $bool = Storage::disk($file->gateway)->config($this->config)->move($file->path, $newFilePath);
 
                     if ($bool) {
-
                         $this->search()->create([
                             'target_id' => $file->target_id,
                             'pid'       => $currentFolder->id,
@@ -552,7 +551,6 @@ trait Rakan
             'msg'    => '文件目录移动成功',
         ];
     }
-
 
     /**
      * 获取父级目录.
@@ -667,9 +665,10 @@ trait Rakan
      * @desc
      * @param $step integer 1
      * @param $files array
-     * @return boolean
+     *
+     * @return bool
      */
-    public function incrementUseTimes($step = 1, $files)
+    public function incrementUseTimes($files, $step = 1)
     {
         return $this->search()->whereIn('path', $files)->increment('use_times', $step);
     }
@@ -678,11 +677,12 @@ trait Rakan
      * 减少引用次数.
      *
      * @desc
-     * @param $step integer 1
      * @param $files array
-     * @return boolean
+     * @param $step integer 1
+     *
+     * @return bool
      */
-    public function decrementUseTimes($step = 1, $files)
+    public function decrementUseTimes($files, $step = 1)
     {
         return $this->search()->whereIn('path', $files)->decrement('use_times', $step);
     }
