@@ -43,6 +43,19 @@
 ### 安装
 
     composer require telstatic/rakan
+    
+<div id="usage"></div>
+    
+### 配置
+    
+    修改config/filessystems.php
+    disk中添加
+    'oss' => [
+        'driver' => 'oss'
+    ],
+    'oss' => [
+        'driver' => 'qiniu'
+    ],
 
 <div id="usage"></div>
 
