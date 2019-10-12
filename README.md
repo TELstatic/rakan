@@ -48,12 +48,11 @@
     
 ### 配置
     
-    修改config/filessystems.php
-    disk中添加
+    修改config/filessystems.php,disk中添加
     'oss' => [
         'driver' => 'oss'
     ],
-    'oss' => [
+    'qiniu' => [
         'driver' => 'qiniu'
     ],
 
