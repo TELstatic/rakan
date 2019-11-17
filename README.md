@@ -10,7 +10,7 @@
     <img src="https://img.shields.io/packagist/dt/telstatic/rakan.svg?style=flat-square" alt="downloads" />
     <img src="https://img.shields.io/packagist/dm/telstatic/rakan.svg?style=flat-square" alt="downloads" />
     <img src="https://img.shields.io/packagist/php-v/telstatic/rakan.svg?style=flat-square" alt="downloads" />
-    
+
 </p>
 
 >适配阿里云OSS,七牛云
@@ -43,11 +43,11 @@
 ### 安装
 
     composer require telstatic/rakan
-    
+
 <div id="usage"></div>
-    
+
 ### 配置
-    
+
     修改config/filessystems.php,disk中添加
     'oss' => [
         'driver' => 'oss'
@@ -269,6 +269,7 @@
 - checkFile 检查文件是否存在
     注意网关设置
     
+
 参数
 ​    
 
@@ -405,9 +406,9 @@
        $image_info = getimagesize($file);
        $image_data = fread(fopen($file, 'r'), filesize($file));
        $base64_image = 'data:'.$image_info['mime'].';base64,'.chunk_split(base64_encode($image_data));
-
+    
        Storage::disk('oss')->base64('avatars/avatarx.jpg', $base64_image);//base64 字符串上传
-               
+
 <div id="todo"></div>
 
 ### TODO
@@ -442,3 +443,6 @@
 
 [七牛云对象存储 PHP-SDK](https://developer.qiniu.com/kodo/sdk/1241/php)
 
+### Thanks
+
+[![](phpstorm.svg)](https://www.jetbrains.com)
