@@ -58,7 +58,7 @@ trait Rakan
     /**
      * 根目录.
      */
-    protected function root()
+    public function root()
     {
         $hashids = new Hashids(config('rakan.hashids.salt'), config('rakan.hashids.length'),
             config('rakan.hashids.alphabet'));
@@ -72,7 +72,7 @@ trait Rakan
      * 获取Root目录.
      * 不存在则创建.
      */
-    protected function getRootFolder()
+    public function getRootFolder()
     {
         $path = $this->root();
 
@@ -635,8 +635,8 @@ trait Rakan
      */
     public function setACL($path, $visibility = 1)
     {
-        return Storage::disk($this->gateway ?? config('rakan.default.gateway'))->config($this->config)->setVisibility($path,
-            $visibility);
+        return Storage::disk($this->gateway ?? config('rakan.default.gateway'))
+            ->config($this->config)->setVisibility($path, $visibility);
     }
 
     /**
