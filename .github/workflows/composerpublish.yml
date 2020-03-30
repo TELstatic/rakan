@@ -21,6 +21,10 @@ jobs:
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
+    - uses:  Klemensas/action-autotag@stable
+      with:
+        GITHUB_TOKEN: $"{{ secrets.GITHUB_TOKEN }}"
+        tag_message: "发布新版本"
 
     # Runs a single command using the runners shell
     - name: Run a one-line script
