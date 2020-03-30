@@ -1,28 +1,14 @@
 name: Rakan Package Publish
-
 on:
   push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
-
+    branches:
+      - master
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - id: compute_tag
-      uses: craig-day/compute-tag@v4
-      with:
-        repository: https://github.com/telstatic/rakan
-        github_token: ${{ secrets.gayhub_token }}
-        version_scheme: continuous
-
-    - name: create release
-      uses: actions/create-release@v4
-      with:
-        tag_name: ${{ steps.compute_tag.outputs.next_tag }}
-        release_name: ${{ steps.compute_tag.outputs.next_tag }}
-        body: >
-          Automatic release of ${{ steps.compute_tag.outputs.next_tag }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.gayhub_token }}
+      - uses: actions/checkout@master
+      - name: Bump version and push tag
+        uses: mathieudutour/github-tag-action@v4
+        with:
+          github_token: ${{ secrets.gayhub_token }}
