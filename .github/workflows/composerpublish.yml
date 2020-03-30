@@ -23,7 +23,7 @@ jobs:
     - uses: actions/checkout@v2
     - uses:  Klemensas/action-autotag@stable
       with:
-        GITHUB_TOKEN: $"{{ secrets.GITHUB_TOKEN }}"
+        GITHUB_TOKEN: $"{{ secrets.gayhub_token }}"
         tag_message: "发布新版本"
 
     # Runs a single command using the runners shell
