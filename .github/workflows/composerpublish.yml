@@ -12,3 +12,4 @@ jobs:
         uses: mathieudutour/github-tag-action@v4
         with:
           github_token: ${{ secrets.gayhub_token }}
+          tag_prefix: ""
