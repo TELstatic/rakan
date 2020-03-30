@@ -1,37 +1,28 @@
-# This is a basic workflow to help you get started with Actions
-
 name: Rakan Package Publish
 
-# Controls when the action will run. Triggers the workflow on push or pull request
-# events but only for the master branch
 on:
   push:
     branches: [ master ]
   pull_request:
     branches: [ master ]
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   build:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-    - uses: actions/checkout@v2
-    - uses:  Klemensas/action-autotag@stable
+    - id: compute_tag
+      uses: craig-day/compute-tag@v4
       with:
-        GITHUB_TOKEN: $"{{ secrets.gayhub_token }}"
-        tag_message: "发布新版本"
+        repository: https://github.com/telstatic/rakan
+        github_token: ${{ secrets.gayhub_token }}
+        version_scheme: continuous
 
-    # Runs a single command using the runners shell
-    - name: Run a one-line script
-      run: echo Hello, world!
-
-    # Runs a set of commands using the runners shell
-    - name: Run a multi-line script
-      run: |
-        echo Add other actions to build,
-        echo test, and deploy your project.
+    - name: create release
+      uses: actions/create-release@v4
+      with:
+        tag_name: ${{ steps.compute_tag.outputs.next_tag }}
+        release_name: ${{ steps.compute_tag.outputs.next_tag }}
+        body: >
+          Automatic release of ${{ steps.compute_tag.outputs.next_tag }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.gayhub_token }}
