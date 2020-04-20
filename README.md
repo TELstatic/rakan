@@ -443,6 +443,13 @@
 
 [七牛云对象存储 PHP-SDK](https://developer.qiniu.com/kodo/sdk/1241/php)
 
+### Buy me a coffee
+
+> Liked some of my work? Buy me a coffee (or more likely a beer)
+
+<img src="https://cdn.telstatic.xyz/sponsors/alipay.jpg" width="200" height="300">
+<img src="https://cdn.telstatic.xyz/sponsors/wechat.jpg" width="200" height="300">
+
 ### Thanks
 
 [![](phpstorm.svg)](https://www.jetbrains.com)
