@@ -102,6 +102,7 @@ class Oss implements GatewayApplicationInterface
         $response['data']['key'] = '';
 
         $response['expire'] = $expire;
+        $response['expire_at'] = date('Y-m-d H:i:s', time() + $expire);
 
         if (config('app.env') != 'local') {
             $response['data']['callback'] = $base64_callback_body;
@@ -329,7 +330,7 @@ class Oss implements GatewayApplicationInterface
     {
         $result = $this->readObject($path);
 
-        $result['contents'] = (string) $result['Body'];
+        $result['contents'] = (string)$result['Body'];
         unset($result['Body']);
 
         return $result;

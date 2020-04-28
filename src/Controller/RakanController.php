@@ -33,6 +33,7 @@ class RakanController extends BaseController
 
         return response()->json([
             'status' => $file ? 200 : 500,
+            'url'    => $file->url,
         ]);
     }
 
