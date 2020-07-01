@@ -38,6 +38,21 @@ class Qiniu implements GatewayApplicationInterface
         $this->uploadManager = new UploadManager();
     }
 
+    public function config($config)
+    {
+        $this->accessKey = $config['access_key'] ?? config('rakan.gateways.qiniu.access_key');
+        $this->secretKey = $config['secret_key'] ?? config('rakan.gateways.qiniu.secret_key');
+        $this->bucket = $config['bucket'] ?? config('rakan.gateways.qiniu.bucket');
+        $this->expire = $config['expire'] ?? config('rakan.gateways.qiniu.expire');
+        $this->host = $config['host'] ?? config('rakan.gateways.qiniu.host');
+
+        $this->auth = new Auth($this->accessKey, $this->secretKey);
+        $this->bucketManger = new BucketManager($this->auth);
+        $this->uploadManager = new UploadManager();
+
+        return $this;
+    }
+
     public function signature($file)
     {
         return $this->auth->privateDownloadUrl(rtrim($this->host, '/').'/'.$file, $this->expire);

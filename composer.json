@@ -31,5 +31,8 @@
         "Rakan": "TELstatic\\Rakan\\Facade"
       }
     }
+  },
+  "scripts": {
+    "pre-package-install": "@php echo 'Thank you for using rakan (https://github.com/telstatic/rakan) '"
   }
 }
