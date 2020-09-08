@@ -15,6 +15,7 @@
     "hashids/hashids": "3.0.0",
     "aliyuncs/oss-sdk-php": "^2.3",
     "league/flysystem": "^1.0",
+    "qcloud/cos-sdk-v5": ">=2.0",
     "qiniu/php-sdk": "dev-master"
   },
   "autoload": {
@@ -31,8 +32,5 @@
         "Rakan": "TELstatic\\Rakan\\Facade"
       }
     }
-  },
-  "scripts": {
-    "pre-package-install": "@php echo 'Thank you for using rakan (https://github.com/telstatic/rakan) '"
   }
 }

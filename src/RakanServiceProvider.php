@@ -45,6 +45,10 @@ class RakanServiceProvider extends ServiceProvider
             return Rakan::qiniu();
         });
 
+        $this->app->singleton('rakan.cos', function () {
+            return Rakan::cos();
+        });
+
         Storage::extend('oss', function () {
             $adapter = new RakanAdapter('oss');
 
@@ -72,10 +76,25 @@ class RakanServiceProvider extends ServiceProvider
 
             return $filesystem;
         });
+
+
+        Storage::extend('cos', function () {
+            $adapter = new RakanAdapter('cos');
+
+            $filesystem = new Filesystem($adapter);
+
+            $filesystem->addPlugin(new Signature());
+            $filesystem->addPlugin(new Policy());
+            $filesystem->addPlugin(new Verify());
+            $filesystem->addPlugin(new Base64());
+            $filesystem->addPlugin(new Config());
+
+            return $filesystem;
+        });
     }
 
     public function provides()
     {
-        return ['rakan.oss', 'rakan.qiniu'];
+        return ['rakan.oss', 'rakan.qiniu', 'rakan.cos'];
     }
 }
