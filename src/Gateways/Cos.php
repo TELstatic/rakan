@@ -8,6 +8,7 @@
 
 namespace TELstatic\Rakan\Gateways;
 
+use function GuzzleHttp\Psr7\build_query;
 use League\Flysystem\Config;
 use function Matrix\trace;
 use Qcloud\Cos\Exception\CosException;
@@ -55,6 +56,7 @@ class Cos implements GatewayApplicationInterface
      * 生成请求签名
      * @desc 生成请求签名
      * @param $file
+     * @return mixed
      * @author Sakuraiyaya
      * Date: 2020/8/27
      */
@@ -66,15 +68,12 @@ class Cos implements GatewayApplicationInterface
 
         $signTime = $startTimestamp.';'.$endTimestamp;
 
-//        $headerList = $this->getUrlParamList($headers);
-//
-//        $httpHeaders = $this->getHttpParameters($headers);
-
         $headerList = '';
 
         $urlParamList = '';
 
-        $httpMethod = 'put';
+        $httpMethod = 'get';
+
         $signKey = hash_hmac('sha1', $signTime, $this->secretKey);
 
         $httpString = "$httpMethod\n$file\n";
@@ -88,59 +87,6 @@ class Cos implements GatewayApplicationInterface
         $authorization = "q-sign-algorithm=sha1&q-ak=$this->accessKey&q-sign-time=$signTime&q-key-time=$signTime&q-header-list=$headerList&q-url-param-list=$urlParamList&q-signature=$signature";
 
         return $authorization;
-    }
-
-    public function getUrlParamList($headers)
-    {
-        if (!is_array($headers)) {
-            return false;
-        }
-
-        try {
-            $arr = [];
-
-            foreach ($headers as $key => $value) {
-                array_poush($arr, $key);
-            }
-
-            sort($arr);
-
-            return implode(';', $arr);
-
-        } catch (\CosException $e) {
-            \Log::error($e->getMessage());
-
-            return false;
-        }
-    }
-
-    public function getHttpParameters($headers)
-    {
-        if (!is_array($headers)) {
-            return false;
-        }
-
-        try {
-            $arr = [];
-
-            foreach ($headers as $key => $value) {
-                $tmpKey = strtolower($key);
-                $arr[$tmpKey] = urlencode($value);
-            }
-
-            ksort($arr);
-            $headerArray = [];
-
-            foreach ($arr as $key => $value) {
-                array_push($headerArray, "$key=$value");
-            }
-
-            return implode('&', $headerArray);
-        } catch (\CosException $e) {
-            \Log::error($e->getMessage());
-
-            return false;
-        }
     }
 
     public function policy($route = 'rakan.callback')
@@ -248,9 +194,141 @@ class Cos implements GatewayApplicationInterface
         throw new CosException('Invalid base64 str');
     }
 
-    public function uploadPart()
+    /**
+     * 初始化分块上传
+     * @desc 初始化分块上传
+     * @param $path
+     * @return mixed
+     * @author Sakuraiyaya
+     * Date: 2020/9/10
+     */
+    public function initiateMultipartUpload($path)
     {
-        return '123456';
+        $result = $this->client->createMultipartUpload([
+            'Bucket' => $this->bucket,
+            'Key'    => $path,
+        ]);
+
+        return $result['UploadId'];
+    }
+
+    /**
+     * 上传分块
+     * @desc 上传分块
+     * @param $path
+     * @param $file
+     * @param $options
+     * @return bool
+     * @author Sakuraiyaya
+     * Date: 2020/9/10
+     */
+    public function multiUpload(
+        $path,
+        $file,
+        $options = [
+            'partSize' => 1024 * 100
+        ]
+    ) {
+        $min = 1024 * 100;
+        $max = 1024 * 5000;
+
+        if ($options['partSize'] < $min || $options['partSize'] > $max) {
+            throw new CosException('上传分片大小应在1MB到5GB之间');
+        }
+
+        try {
+            $uploadId = $this->initiateMultipartUpload($path);
+
+            // 文件总大小
+            $totalSize = filesize($file);
+
+            // 设置分块大小
+            $partSize = $options['partSize'];
+
+            // 计算分块数
+            $batchNumber = (int)ceil($totalSize / $partSize);
+
+            $splits = $this->splitFile($file, $partSize, $batchNumber);
+
+            $result = false;
+
+            for ($i = 0; $i < $batchNumber; $i++) {
+                $res = $this->client->uploadPart([
+                    'Bucket'     => $this->bucket,
+                    'Key'        => $path,
+                    'Body'       => $splits[$i],
+                    'UploadId'   => $uploadId,
+                    'PartNumber' => $i + 1,
+                ]);
+
+                if ($i === ($batchNumber - 1)) {
+                    $list = $this->client->listParts([
+                        'Bucket'   => $this->bucket,
+                        'Key'      => $path,
+                        'UploadId' => $uploadId,
+                    ]);
+
+                    if ($list['Parts']) {
+                        $result = $this->completeMultipartUpload($path, $list['Parts'], $uploadId);
+
+                        $result = $result->toArray();
+                    }
+                }
+            }
+
+            return $result['Location'];
+        } catch (CosException $e) {
+            \Log::error($e->getMessage());
+
+            return false;
+        }
+    }
+
+    /**
+     * 文件分块
+     * @desc 文件分块
+     * @param $file
+     * @param $blockSize
+     * @param $count
+     * @return array
+     * @author Sakuraiyaya
+     * Date: 2020/9/10
+     */
+    protected function splitFile($file, $blockSize, $count)
+    {
+        $parts = [];
+
+        $start = 0;
+
+        for ($i = 0; $i < $count; $i++) {
+            $parts[$i] = file_get_contents($file, false, null, $start, $blockSize);
+
+            $start = $start + $blockSize;
+        }
+
+        return $parts;
+    }
+
+    /**
+     * 完成分块上传
+     * @desc 完成分块上传
+     * @param $path
+     * @param $options
+     * @param $uploadId
+     * @return mixed
+     * @author Sakuraiyaya
+     * Date: 2020/9/10
+     */
+    public function completeMultipartUpload($path, $options, $uploadId)
+    {
+        $result = $this->client->completeMultipartUpload([
+            'Bucket'   => $this->bucket,
+            'Key'      => $path,
+            'UploadId' => $uploadId,
+            'Parts'    => $options,
+        ]);
+
+        return $result;
     }
 
     /**

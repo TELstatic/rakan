@@ -10,6 +10,7 @@ use TELstatic\Rakan\Plugins\Config;
 use TELstatic\Rakan\Plugins\Policy;
 use TELstatic\Rakan\Plugins\Signature;
 use TELstatic\Rakan\Plugins\Symlink;
+use TELstatic\Rakan\Plugins\MultiUpload;
 use TELstatic\Rakan\Plugins\Verify;
 
 class RakanServiceProvider extends ServiceProvider
@@ -60,6 +61,7 @@ class RakanServiceProvider extends ServiceProvider
             $filesystem->addPlugin(new Signature());
             $filesystem->addPlugin(new Symlink());
             $filesystem->addPlugin(new Config());
+            $filesystem->addPlugin(new MultiUpload());
 
             return $filesystem;
         });
@@ -73,6 +75,7 @@ class RakanServiceProvider extends ServiceProvider
             $filesystem->addPlugin(new Verify());
             $filesystem->addPlugin(new Base64());
             $filesystem->addPlugin(new Config());
+            $filesystem->addPlugin(new MultiUpload());
 
             return $filesystem;
         });
@@ -88,6 +91,7 @@ class RakanServiceProvider extends ServiceProvider
             $filesystem->addPlugin(new Verify());
             $filesystem->addPlugin(new Base64());
             $filesystem->addPlugin(new Config());
+            $filesystem->addPlugin(new MultiUpload());
 
             return $filesystem;
         });

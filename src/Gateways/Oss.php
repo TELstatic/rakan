@@ -50,6 +50,25 @@ class Oss implements GatewayApplicationInterface
         return $url;
     }
 
+    public function multiUpload(
+        $path,
+        $file,
+        $options = [
+            OssClient::OSS_CHECK_MD5 => true,
+            OssClient::OSS_PART_SIZE => 1024 * 100,
+        ]
+    ) {
+        try {
+            $result = $this->client->multiuploadFile($this->bucket, ltrim($path, '/'), $file, $options);
+
+            return $result['oss-request-url'];
+        } catch (OssException $e) {
+            Log::error($e->getMessage());
+
+            return false;
+        }
+    }
+
     public function policy($route = 'rakan.callback')
     {
         $callback_param = [
