@@ -226,11 +226,11 @@ class Cos implements GatewayApplicationInterface
         $path,
         $file,
         $options = [
-            'partSize' => 1024 * 100
+            'partSize' => 1024 * 1000
         ]
     ) {
-        $min = 1024 * 100;
-        $max = 1024 * 5000;
+        $min = 1024 * 1000;
+        $max = 1024 * 1000 * 5000;
 
         if ($options['partSize'] < $min || $options['partSize'] > $max) {
             throw new CosException('上传分片大小应在1MB到5GB之间');
@@ -487,10 +487,16 @@ class Cos implements GatewayApplicationInterface
                 return false;
             }
         } elseif (is_array($path)) {
+            $data = [];
+
+            foreach ($path as $key => $value) {
+                $data[$key]['Key'] = $value;
+            }
+
             try {
                 $result = $this->client->deleteObjects([
-                    'Bucket' => $this->bucket,
-                    'Key'    => $path,
+                    'Bucket'  => $this->bucket,
+                    'Objects' => $data,
                 ]);
 
                 return $result;

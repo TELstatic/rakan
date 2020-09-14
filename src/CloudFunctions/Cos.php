@@ -43,9 +43,21 @@ function main_handler($event, $context)
             'Key'    => $key,
         ]);
 
-        $url = $host.$key.'?imageInfo';
+        if (($metadata['ContentType'] & "image") === "image") {
+            $bool = exif_imagetype($host.$key);
 
-        $fileInfo = json_decode(file_get_contents($url), true);
+            if ($bool) {
+                $url = $host.$key.'?imageInfo';
+
+                $fileInfo = json_decode(file_get_contents($url), true);
+            } else {
+                $fileInfo['width'] = 0;
+                $fileInfo['height'] = 0;
+            }
+        } else {
+            $fileInfo['width'] = 0;
+            $fileInfo['height'] = 0;
+        }
 
         $data = [
             'key'      => $key,
