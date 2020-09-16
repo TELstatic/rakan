@@ -30,6 +30,8 @@ class Cos implements GatewayApplicationInterface
 
     protected $client;
 
+    const PUBLIC_GRANT_URI = 'http://cam.qcloud.com/groups/global/AllUsers';
+
     public function config($config)
     {
         $this->accessKey = $config['access_key'] ?? config('rakan.gateways.cos.access_key');
@@ -253,7 +255,7 @@ class Cos implements GatewayApplicationInterface
             $result = false;
 
             for ($i = 0; $i < $batchNumber; $i++) {
-                $res = $this->client->uploadPart([
+                $this->client->uploadPart([
                     'Bucket'     => $this->bucket,
                     'Key'        => $path,
                     'Body'       => $splits[$i],
@@ -606,13 +608,15 @@ class Cos implements GatewayApplicationInterface
         $visibility = AdapterInterface::VISIBILITY_PRIVATE;
 
         foreach ($response['Grants'] as $grant) {
-            if (
-                isset($grant['Grantee']['URI'])
-                && $grant['Grantee']['URI'] === self::PUBLIC_GRANT_URI
-                && $grant['Permission'] === 'READ'
-            ) {
-                $visibility = AdapterInterface::VISIBILITY_PUBLIC;
-                break;
+            foreach ($grant['Grant'] as $grantee) {
+                if (
+                    isset($grantee['Grantee']['URI'])
+                    && $grantee['Grantee']['URI'] == self::PUBLIC_GRANT_URI
+                    && $grantee['Permission'] == 'READ'
+                ) {
+                    $visibility = AdapterInterface::VISIBILITY_PUBLIC;
+                    break;
+                }
             }
         }
 
@@ -706,7 +710,7 @@ class Cos implements GatewayApplicationInterface
      * 读取文件列表
      * @desc 读取文件列表
      * @param $dirname
-     * @return bool
+     * @return mixed
      * @author Sakuraiyaya
      * Date: 2020/8/26
      */
@@ -723,10 +727,37 @@ class Cos implements GatewayApplicationInterface
         return $result;
     }
 
+    public function listDirObjects($directory = '', $recursive = false)
+    {
+        $marker = '';
+        $maxkeys = 1000;
+        $options = [
+            'Bucket'    => $this->bucket,
+            'Marker'    => $marker,
+            'MaxKeys'   => $maxkeys,
+        ];
+
+        if($directory){
+            $options['Prefix'] = $directory;
+        }
+
+        try {
+            $objectInfo = $this->client->listObjects($options);
+
+            $objectInfo = $objectInfo->toArray();
+
+            return $objectInfo;
+        } catch (CosException $e) {
+            \Log::error($e->getMessage());
+
+            return false;
+        }
+    }
+
     /**
-     *
+     * 获取文件访问地址
      * @desc 获取文件访问地址
-     * @param $path 获取文件访问地址
+     * @param $path
      * @return string
      * @author Sakuraiyaya
      * Date: 2020/9/7
@@ -810,30 +841,6 @@ class Cos implements GatewayApplicationInterface
         return $object;
     }
 
-    public function listDirObjects($directory = '', $recursive = false)
-    {
-        $delimiter = $recursive ? '' : '/';
-        $marker = '';
-        $maxkeys = 1000;
-        $options = [
-            'Bucket'    => $this->bucket,
-            'Prefix'    => ((string)$directory === '' ? '' : (rtrim($directory, '/').'/')),
-            'Delimiter' => $delimiter,
-            'Marker'    => $marker,
-            'MaxKeys'   => $maxkeys,
-        ];
-
-        try {
-            $objectInfo = $this->client->listObjects($options);
-
-            return $objectInfo;
-        } catch (CosException $e) {
-            \Log::error($e->getMessage());
-
-            return false;
-        }
-    }
-
     protected function removePathPrefix($path)
     {
         return substr($path, strlen(''));
@@ -852,6 +859,7 @@ class Cos implements GatewayApplicationInterface
         $result = [
             'path' => $path ?: $this->removePathPrefix(isset($object['Key']) ? $object['Key'] : $object['Prefix']),
         ];
+
         $result['dirname'] = Util::dirname($result['path']);
 
         if (isset($object['LastModified'])) {
