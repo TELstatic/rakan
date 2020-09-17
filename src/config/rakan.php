@@ -33,5 +33,14 @@ return [
             'expire'     => env('QINIU_EXPIRE', 3600),
             'acl'        => env('QINIU_ACL', 1),
         ],
+        'cos'   => [
+            'access_key' => env('COS_AK'),
+            'secret_key' => env('COS_SK'),
+            'region'     => env('COS_REGION'),
+            'bucket'     => env('COS_BUCKET'),
+            'host'       => env('COS_HOST'),
+            'expire'     => env('COS_EXPIRE', 3600),
+            'acl'        => env('COS_ACL', 1),
+        ],
     ],
 ];
