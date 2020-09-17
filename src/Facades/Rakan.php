@@ -20,4 +20,9 @@ class Rakan extends Facade
     {
         return app('rakan.qiniu');
     }
+
+    public function obs()
+    {
+        return app('rakan.obs');
+    }
 }

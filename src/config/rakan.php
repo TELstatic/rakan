@@ -33,5 +33,14 @@ return [
             'expire'     => env('QINIU_EXPIRE', 3600),
             'acl'        => env('QINIU_ACL', 1),
         ],
+        'obs' => [
+            'access_key' => env('OBS_AK'),
+            'secret_key' => env('OBS_SK'),
+            'bucket'     => env('OBS_BUCKET'),
+            'expire'     => env('OBS_EXPIRE'),
+            'acl'        => env('OBS_ACL'),
+            'endpoint'   => env('OBS_ENDPOINT'),
+            'host'       => env('OBS_HOST'),
+        ],
     ],
 ];

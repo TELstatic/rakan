@@ -11,6 +11,7 @@ use TELstatic\Rakan\Plugins\Policy;
 use TELstatic\Rakan\Plugins\Signature;
 use TELstatic\Rakan\Plugins\Symlink;
 use TELstatic\Rakan\Plugins\Verify;
+use TELstatic\Rakan\Plugins\MultiUpload;
 
 class RakanServiceProvider extends ServiceProvider
 {
@@ -45,6 +46,10 @@ class RakanServiceProvider extends ServiceProvider
             return Rakan::qiniu();
         });
 
+        $this->app->singleton('rakan.obs', function () {
+            return Rakan::obs();
+        });
+
         Storage::extend('oss', function () {
             $adapter = new RakanAdapter('oss');
 
@@ -72,10 +77,25 @@ class RakanServiceProvider extends ServiceProvider
 
             return $filesystem;
         });
+
+        Storage::extend('obs', function () {
+            $adapter = new RakanAdapter('obs');
+
+            $filesystem = new Filesystem($adapter);
+
+            $filesystem->addPlugin(new Signature());
+            $filesystem->addPlugin(new Policy());
+            $filesystem->addPlugin(new Verify());
+            $filesystem->addPlugin(new Base64());
+            $filesystem->addPlugin(new Config());
+            $filesystem->addPlugin(new MultiUpload());
+
+            return $filesystem;
+        });
     }
 
     public function provides()
     {
-        return ['rakan.oss', 'rakan.qiniu'];
+        return ['rakan.oss', 'rakan.qiniu','rakan.obs'];
     }
 }
