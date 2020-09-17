@@ -36,7 +36,7 @@
 * [资料](#doc)
 
 ### 简介
-    通用文件管理器,支持阿里云OSS,七牛云直传
+    通用文件管理器,支持阿里云OSS,七牛云,腾讯,华为 直传
 
 <div id="installation"></div>
 
@@ -408,6 +408,12 @@
        $base64_image = 'data:'.$image_info['mime'].';base64,'.chunk_split(base64_encode($image_data));
     
        Storage::disk('oss')->base64('avatars/avatarx.jpg', $base64_image);//base64 字符串上传
+
+### 对象存储支持一览
+ * 阿里云OSS
+ * 七牛云KODO
+ * 腾讯云COS
+ * 华为云OBS
 
 <div id="todo"></div>
 
