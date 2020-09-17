@@ -256,7 +256,7 @@ class Cos implements GatewayApplicationInterface
             $partSize = $options['partSize'];
 
             // 计算分块数
-            $batchNumber = (int)ceil($totalSize / $partSize);
+            $batchNumber = (int) ceil($totalSize / $partSize);
 
             $splits = $this->splitFile($file, $partSize, $batchNumber);
 
