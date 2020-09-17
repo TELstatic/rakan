@@ -68,18 +68,20 @@ class Qiniu implements GatewayApplicationInterface
         finfo_close($finfo);
 
         try{
-            $resumeUploader = new ResumeUploader($token,
+            $resumeUploader = new ResumeUploader(
+                $token,
                 $path,
-                fopen($file,"r"),
+                fopen($file,'r'),
                 filesize($file),
                 $params = [],
                 $mime,
-                new \Qiniu\Config());
+                new \Qiniu\Config()
+            );
 
-            $result =  $resumeUploader->upload($file);
+            $result = $resumeUploader->upload($file);
 
             return $this->getUrl($result[0]['key']);
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             return false;
         }
     }

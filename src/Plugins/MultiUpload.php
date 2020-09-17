@@ -3,7 +3,7 @@
  * Created by PhpStorm.
  * User: Sakuraiyaya
  * Date: 2020/9/9
- * Time: 8:42
+ * Time: 8:42.
  */
 
 namespace TELstatic\Rakan\Plugins;

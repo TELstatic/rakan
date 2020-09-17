@@ -3,19 +3,17 @@
  * Created by PhpStorm.
  * User: Sakuraiyaya
  * Date: 2020/8/25
- * Time: 9:36
+ * Time: 9:36.
  */
 
 namespace TELstatic\Rakan\Gateways;
 
-use function GuzzleHttp\Psr7\build_query;
+use League\Flysystem\AdapterInterface;
 use League\Flysystem\Config;
-use function Matrix\trace;
+use League\Flysystem\Util;
 use Qcloud\Cos\Exception\CosException;
 use Qcloud\Cos\Exception\ServiceResponseException;
 use TELstatic\Rakan\Interfaces\GatewayApplicationInterface;
-use League\Flysystem\AdapterInterface;
-use League\Flysystem\Util;
 
 
 class Cos implements GatewayApplicationInterface
@@ -47,7 +45,7 @@ class Cos implements GatewayApplicationInterface
             'credentials' =>
                 [
                     'secretId'  => $this->accessKey,
-                    'secretKey' => $this->secretKey
+                    'secretKey' => $this->secretKey,
                 ],
         ]);
 
@@ -55,10 +53,14 @@ class Cos implements GatewayApplicationInterface
     }
 
     /**
-     * 生成请求签名
+     * 生成请求签名.
+     *
      * @desc 生成请求签名
+     *
      * @param $file
+     *
      * @return mixed
+     *
      * @author Sakuraiyaya
      * Date: 2020/8/27
      */
@@ -132,7 +134,7 @@ class Cos implements GatewayApplicationInterface
             'conditions' => $conditions,
         ];
 
-        $signKey = hash_hmac("sha1", $keyTime, $this->secretKey);
+        $signKey = hash_hmac('sha1', $keyTime, $this->secretKey);
 
         $policy = json_encode($arr);
 
@@ -164,7 +166,7 @@ class Cos implements GatewayApplicationInterface
                 'size'     => $_POST['size'],
                 'mimeType' => $_POST['mimeType'],
                 'width'    => $_POST['width'],
-                'height'   => $_POST['height']
+                'height'   => $_POST['height'],
             ];
 
             ksort($data);
@@ -197,10 +199,14 @@ class Cos implements GatewayApplicationInterface
     }
 
     /**
-     * 初始化分块上传
+     * 初始化分块上传.
+     *
      * @desc 初始化分块上传
+     *
      * @param $path
+     *
      * @return mixed
+     *
      * @author Sakuraiyaya
      * Date: 2020/9/10
      */
@@ -215,12 +221,16 @@ class Cos implements GatewayApplicationInterface
     }
 
     /**
-     * 上传分块
+     * 上传分块.
+     *
      * @desc 上传分块
+     *
      * @param $path
      * @param $file
      * @param $options
+     *
      * @return bool
+     *
      * @author Sakuraiyaya
      * Date: 2020/9/10
      */
@@ -228,7 +238,7 @@ class Cos implements GatewayApplicationInterface
         $path,
         $file,
         $options = [
-            'partSize' => 1024 * 1000
+            'partSize' => 1024 * 1000,
         ]
     ) {
         $min = 1024 * 1000;
@@ -248,7 +258,7 @@ class Cos implements GatewayApplicationInterface
             $partSize = $options['partSize'];
 
             // 计算分块数
-            $batchNumber = (int)ceil($totalSize / $partSize);
+            $batchNumber = (int) ceil($totalSize / $partSize);
 
             $splits = $this->splitFile($file, $partSize, $batchNumber);
 
@@ -287,12 +297,16 @@ class Cos implements GatewayApplicationInterface
     }
 
     /**
-     * 文件分块
+     * 文件分块.
+     *
      * @desc 文件分块
+     *
      * @param $file
      * @param $blockSize
      * @param $count
+     *
      * @return array
+     *
      * @author Sakuraiyaya
      * Date: 2020/9/10
      */
@@ -312,12 +326,16 @@ class Cos implements GatewayApplicationInterface
     }
 
     /**
-     * 完成分块上传
+     * 完成分块上传.
+     *
      * @desc 完成分块上传
+     *
      * @param $path
      * @param $options
      * @param $uploadId
+     *
      * @return mixed
+     *
      * @author Sakuraiyaya
      * Date: 2020/9/10
      */
@@ -334,23 +352,27 @@ class Cos implements GatewayApplicationInterface
     }
 
     /**
-     * 上传新文件
+     * 上传新文件.
+     *
      * @desc 上传新文件
+     *
      * @param $path
      * @param $contents
      * @param Config $config
+     *
      * @return bool
+     *
      * @author Sakuraiyaya
      * Date: 2020/8/26
      */
     public function write($path, $contents, Config $config)
     {
         try {
-            $result = $this->client->putObject(array(
+            $result = $this->client->putObject([
                 'Bucket' => $this->bucket,
                 'Key'    => $path,
-                'Body'   => $contents
-            ));
+                'Body'   => $contents,
+            ]);
 
             return $result['Location'];
         } catch (CosException $e) {
@@ -361,12 +383,16 @@ class Cos implements GatewayApplicationInterface
     }
 
     /**
-     * 使用流上传新文件
+     * 使用流上传新文件.
+     *
      * @desc 使用流上传新文件
+     *
      * @param $path
      * @param $resource
      * @param Config $config
+     *
      * @return bool
+     *
      * @author Sakuraiyaya
      * Date: 2020/8/26
      */
@@ -378,12 +404,16 @@ class Cos implements GatewayApplicationInterface
     }
 
     /**
-     * 更新文件
+     * 更新文件.
+     *
      * @desc 更新文件
+     *
      * @param $path
      * @param $contents
      * @param Config $config
+     *
      * @return bool
+     *
      * @author Sakuraiyaya
      * Date: 2020/8/26
      */
@@ -393,12 +423,16 @@ class Cos implements GatewayApplicationInterface
     }
 
     /**
-     * 使用流更新文件
+     * 使用流更新文件.
+     *
      * @desc 使用流更新文件
+     *
      * @param $path
      * @param $resource
      * @param Config $config
+     *
      * @return bool
+     *
      * @author Sakuraiyaya
      * Date: 2020/8/26
      */
@@ -408,11 +442,15 @@ class Cos implements GatewayApplicationInterface
     }
 
     /**
-     * 重命名文件
+     * 重命名文件.
+     *
      * @desc 重命名文件
+     *
      * @param $path
      * @param $newpath
+     *
      * @return bool
+     *
      * @author Sakuraiyaya
      * Date: 2020/8/26
      */
@@ -426,11 +464,15 @@ class Cos implements GatewayApplicationInterface
     }
 
     /**
-     * 复制文件
+     * 复制文件.
+     *
      * @desc 复制文件
+     *
      * @param $path
      * @param $newpath
+     *
      * @return bool
+     *
      * @author Sakuraiyaya
      * Date: 2020/8/26
      */
@@ -453,10 +495,14 @@ class Cos implements GatewayApplicationInterface
     }
 
     /**
-     * 获取资源路径
+     * 获取资源路径.
+     *
      * @desc 获取资源路径
+     *
      * @param $path
+     *
      * @return string
+     *
      * @author Sakuraiyaya
      * Date: 2020/9/7
      */
@@ -466,10 +512,14 @@ class Cos implements GatewayApplicationInterface
     }
 
     /**
-     * 删除文件
+     * 删除文件.
+     *
      * @desc 删除文件
+     *
      * @param $path
+     *
      * @return bool
+     *
      * @author Sakuraiyaya
      * Date: 2020/8/26
      */
@@ -514,10 +564,14 @@ class Cos implements GatewayApplicationInterface
 
 
     /**
-     * 删除目录
+     * 删除目录.
+     *
      * @desc 删除目录
+     *
      * @param $dirname
+     *
      * @return bool
+     *
      * @author Sakuraiyaya
      * Date: 2020/8/26
      */
@@ -549,11 +603,15 @@ class Cos implements GatewayApplicationInterface
     }
 
     /**
-     * 创建目录
+     * 创建目录.
+     *
      * @desc 创建目录
+     *
      * @param $dirname
      * @param Config $config
+     *
      * @return bool
+     *
      * @author Sakuraiyaya
      * Date: 2020/8/26
      */
@@ -565,11 +623,15 @@ class Cos implements GatewayApplicationInterface
     }
 
     /**
-     * 设置文件访问权限
+     * 设置文件访问权限.
+     *
      * @desc 设置文件访问权限
+     *
      * @param $path
      * @param $visibility
+     *
      * @return bool
+     *
      * @author Sakuraiyaya
      * Date: 2020/8/26
      */
@@ -591,10 +653,14 @@ class Cos implements GatewayApplicationInterface
     }
 
     /**
-     * 获取文件访问权限
+     * 获取文件访问权限.
+     *
      * @desc 获取文件访问权限
+     *
      * @param $path
+     *
      * @return array
+     *
      * @author Sakuraiyaya
      * Date: 2020/8/26
      */
@@ -624,10 +690,14 @@ class Cos implements GatewayApplicationInterface
     }
 
     /**
-     * 检查文件是否存在
+     * 检查文件是否存在.
+     *
      * @desc 检查文件是否存在
+     *
      * @param $path
+     *
      * @return bool
+     *
      * @author Sakuraiyaya
      * Date: 2020/8/26
      */
@@ -646,10 +716,14 @@ class Cos implements GatewayApplicationInterface
     }
 
     /**
-     * 读取文件
+     * 读取文件.
+     *
      * @desc 读取文件
+     *
      * @param $path
+     *
      * @return array|bool
+     *
      * @author Sakuraiyaya
      * Date: 2020/8/26
      */
@@ -664,10 +738,14 @@ class Cos implements GatewayApplicationInterface
     }
 
     /**
-     * 读取文件流
+     * 读取文件流.
+     *
      * @desc 读取文件流
+     *
      * @param $path
+     *
      * @return mixed
+     *
      * @author Sakuraiyaya
      * Date: 2020/8/26
      */
@@ -682,9 +760,13 @@ class Cos implements GatewayApplicationInterface
 
     /**
      * 读取 Cos 对象
+     *
      * @desc 读取 Cos 对象
+     *
      * @param $path
+     *
      * @return array|bool
+     *
      * @author Sakuraiyaya
      * Date: 2020/8/26
      */
@@ -707,10 +789,14 @@ class Cos implements GatewayApplicationInterface
     }
 
     /**
-     * 读取文件列表
+     * 读取文件列表.
+     *
      * @desc 读取文件列表
+     *
      * @param $dirname
+     *
      * @return mixed
+     *
      * @author Sakuraiyaya
      * Date: 2020/8/26
      */
@@ -756,9 +842,13 @@ class Cos implements GatewayApplicationInterface
 
     /**
      * 获取文件访问地址
+     *
      * @desc 获取文件访问地址
+     *
      * @param $path
+     *
      * @return string
+     *
      * @author Sakuraiyaya
      * Date: 2020/9/7
      */
@@ -768,10 +858,14 @@ class Cos implements GatewayApplicationInterface
     }
 
     /**
-     * 获取元数据
+     * 获取元数据.
+     *
      * @desc 获取元数据
+     *
      * @param $path
+     *
      * @return bool
+     *
      * @author Sakuraiyaya
      * Date: 2020/9/7
      */
@@ -792,10 +886,14 @@ class Cos implements GatewayApplicationInterface
     }
 
     /**
-     * 获取文件大小
+     * 获取文件大小.
+     *
      * @desc 获取文件大小
+     *
      * @param $path
+     *
      * @return bool
+     *
      * @author Sakuraiyaya
      * Date: 2020/8/26
      */
@@ -808,10 +906,14 @@ class Cos implements GatewayApplicationInterface
     }
 
     /**
-     * 获取文件最后修改时间
+     * 获取文件最后修改时间.
+     *
      * @desc 获取文件最后修改时间
+     *
      * @param $path
+     *
      * @return mixed
+     *
      * @author Sakuraiyaya
      * Date: 2020/8/26
      */
@@ -825,10 +927,14 @@ class Cos implements GatewayApplicationInterface
     }
 
     /**
-     * 获取类型
+     * 获取类型.
+     *
      * @desc 获取类型
+     *
      * @param $path
+     *
      * @return bool
+     *
      * @author Sakuraiyaya
      * Date: 2020/9/7
      */
@@ -888,5 +994,4 @@ class Cos implements GatewayApplicationInterface
 
         return $expiration.'Z';
     }
-
 }

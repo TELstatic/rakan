@@ -349,7 +349,7 @@ class Oss implements GatewayApplicationInterface
     {
         $result = $this->readObject($path);
 
-        $result['contents'] = (string)$result['Body'];
+        $result['contents'] = (string) $result['Body'];
         unset($result['Body']);
 
         return $result;

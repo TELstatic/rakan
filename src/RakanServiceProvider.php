@@ -7,10 +7,10 @@ use Illuminate\Support\ServiceProvider;
 use League\Flysystem\Filesystem;
 use TELstatic\Rakan\Plugins\Base64;
 use TELstatic\Rakan\Plugins\Config;
+use TELstatic\Rakan\Plugins\MultiUpload;
 use TELstatic\Rakan\Plugins\Policy;
 use TELstatic\Rakan\Plugins\Signature;
 use TELstatic\Rakan\Plugins\Symlink;
-use TELstatic\Rakan\Plugins\MultiUpload;
 use TELstatic\Rakan\Plugins\Verify;
 
 class RakanServiceProvider extends ServiceProvider
@@ -79,7 +79,6 @@ class RakanServiceProvider extends ServiceProvider
 
             return $filesystem;
         });
-
 
         Storage::extend('cos', function () {
             $adapter = new RakanAdapter('cos');

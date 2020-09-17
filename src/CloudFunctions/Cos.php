@@ -3,16 +3,16 @@
  * Created by PhpStorm.
  * User: Sakuraiyaya
  * Date: 2020/9/8
- * Time: 9:33
+ * Time: 9:33.
  */
 
 require 'cos-php-sdk-v5/vendor/autoload.php';
 
 use Qcloud\Cos\Client;
 
-$appid = '***';  # 请替换为您的 APPID
-$secretId = '***';  # 请替换为您的 SecretId
-$secretKey = '***';  # 请替换为您的 SecretKey
+$appid = '***';  // 请替换为您的 APPID
+$secretId = '***';  // 请替换为您的 SecretId
+$secretKey = '***';  // 请替换为您的 SecretKey
 $region = 'ap-shanghai';
 $bucket = '***'.'-'.$appid;
 $host = 'https://'.$bucket.'.cos.'.$region.'.myqcloud.com/';
@@ -43,7 +43,7 @@ function main_handler($event, $context)
             'Key'    => $key,
         ]);
 
-        if (($metadata['ContentType'] & "image") === "image") {
+        if (($metadata['ContentType'] & 'image') === 'image') {
             $bool = exif_imagetype($host.$key);
 
             if ($bool) {
@@ -65,7 +65,7 @@ function main_handler($event, $context)
             'size'     => $metadata['ContentLength'],
             'mimeType' => $metadata['ContentType'],
             'width'    => $fileInfo['width'],
-            'height'   => $fileInfo['height']
+            'height'   => $fileInfo['height'],
         ];
 
         ksort($data);
@@ -98,5 +98,3 @@ function main_handler($event, $context)
 
     return 'Success';
 }
-
-?>
