@@ -35,7 +35,7 @@ class RakanAdapter extends AbstractAdapter
 
     public function write($path, $contents, Config $config)
     {
-        return app('rakan.'.$this->gateway)->config($this->config)->write($path, $contents, $config);
+        return app('rakan.'.$this->gateway)->config($this->config)->write(ltrim($path, '/'), $contents, $config);
     }
 
     public function writeStream($path, $resource, Config $config)
@@ -157,7 +157,7 @@ class RakanAdapter extends AbstractAdapter
     {
         return app('rakan.'.$this->gateway)->config($this->config)->symlink($symlink, $file);
     }
-
+ 
     public function multiUpload($path, $file, $options = [])
     {
         return app('rakan.'.$this->gateway)->config($this->config)->multiUpload($path, $file, $options);

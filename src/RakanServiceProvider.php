@@ -7,6 +7,7 @@ use Illuminate\Support\ServiceProvider;
 use League\Flysystem\Filesystem;
 use TELstatic\Rakan\Plugins\Base64;
 use TELstatic\Rakan\Plugins\Config;
+use TELstatic\Rakan\Plugins\MultiUpload;
 use TELstatic\Rakan\Plugins\Policy;
 use TELstatic\Rakan\Plugins\Signature;
 use TELstatic\Rakan\Plugins\Symlink;
@@ -49,6 +50,10 @@ class RakanServiceProvider extends ServiceProvider
         $this->app->singleton('rakan.obs', function () {
             return Rakan::obs();
         });
+      
+        $this->app->singleton('rakan.cos', function () {
+            return Rakan::cos();
+        });
 
         Storage::extend('oss', function () {
             $adapter = new RakanAdapter('oss');
@@ -61,6 +66,7 @@ class RakanServiceProvider extends ServiceProvider
             $filesystem->addPlugin(new Signature());
             $filesystem->addPlugin(new Symlink());
             $filesystem->addPlugin(new Config());
+            $filesystem->addPlugin(new MultiUpload());
 
             return $filesystem;
         });
@@ -74,6 +80,22 @@ class RakanServiceProvider extends ServiceProvider
             $filesystem->addPlugin(new Verify());
             $filesystem->addPlugin(new Base64());
             $filesystem->addPlugin(new Config());
+            $filesystem->addPlugin(new MultiUpload());
+
+            return $filesystem;
+        });
+
+        Storage::extend('cos', function () {
+            $adapter = new RakanAdapter('cos');
+
+            $filesystem = new Filesystem($adapter);
+
+            $filesystem->addPlugin(new Signature());
+            $filesystem->addPlugin(new Policy());
+            $filesystem->addPlugin(new Verify());
+            $filesystem->addPlugin(new Base64());
+            $filesystem->addPlugin(new Config());
+            $filesystem->addPlugin(new MultiUpload());
 
             return $filesystem;
         });
@@ -96,6 +118,6 @@ class RakanServiceProvider extends ServiceProvider
 
     public function provides()
     {
-        return ['rakan.oss', 'rakan.qiniu','rakan.obs'];
+        return ['rakan.oss', 'rakan.qiniu', 'rakan.obs', 'rakan.cos'];
     }
 }

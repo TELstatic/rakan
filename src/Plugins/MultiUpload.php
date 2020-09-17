@@ -1,17 +1,15 @@
 <?php
 /**
  * Created by PhpStorm.
- * Date: 2020/9/16
- * Time: 11:35
+ * User: Sakuraiyaya
+ * Date: 2020/9/9
+ * Time: 8:42.
  */
 
 namespace TELstatic\Rakan\Plugins;
 
 use League\Flysystem\Plugin\AbstractPlugin;
 
-/**
- * Base64字符串传文件.
- */
 class MultiUpload extends AbstractPlugin
 {
     public function getMethod()

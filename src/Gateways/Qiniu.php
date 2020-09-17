@@ -58,6 +58,34 @@ class Qiniu implements GatewayApplicationInterface
         return $this->auth->privateDownloadUrl(rtrim($this->host, '/').'/'.$file, $this->expire);
     }
 
+    public function multiUpload($path, $file, $options)
+    {
+        $token = $this->auth->uploadToken($this->bucket, $path);
+
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+
+        $mime = finfo_file($finfo, $file);
+        finfo_close($finfo);
+
+        try {
+            $resumeUploader = new ResumeUploader(
+                $token,
+                $path,
+                fopen($file, 'r'),
+                filesize($file),
+                $params = [],
+                $mime,
+                new \Qiniu\Config()
+            );
+
+            $result = $resumeUploader->upload($file);
+
+            return $this->getUrl($result[0]['key']);
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+
     public function policy($route = 'rakan.callback')
     {
         if (config('app.env') != 'local') {

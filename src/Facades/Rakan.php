@@ -25,4 +25,9 @@ class Rakan extends Facade
     {
         return app('rakan.obs');
     }
+  
+    public function cos()
+    {
+        return app('rakan.cos');
+    }
 }
