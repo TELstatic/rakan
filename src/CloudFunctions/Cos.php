@@ -5,7 +5,6 @@
  * Date: 2020/9/8
  * Time: 9:33.
  */
-
 require 'cos-php-sdk-v5/vendor/autoload.php';
 
 use Qcloud\Cos\Client;

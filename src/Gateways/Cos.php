@@ -15,7 +15,6 @@ use Qcloud\Cos\Exception\CosException;
 use Qcloud\Cos\Exception\ServiceResponseException;
 use TELstatic\Rakan\Interfaces\GatewayApplicationInterface;
 
-
 class Cos implements GatewayApplicationInterface
 {
     protected $accessKey;
@@ -42,11 +41,10 @@ class Cos implements GatewayApplicationInterface
         $this->client = new \Qcloud\Cos\Client([
             'region'      => $this->region,
             'schema'      => 'https',
-            'credentials' =>
-                [
-                    'secretId'  => $this->accessKey,
-                    'secretKey' => $this->secretKey,
-                ],
+            'credentials' => [
+                'secretId'  => $this->accessKey,
+                'secretKey' => $this->secretKey,
+            ],
         ]);
 
         return $this;
@@ -258,7 +256,7 @@ class Cos implements GatewayApplicationInterface
             $partSize = $options['partSize'];
 
             // 计算分块数
-            $batchNumber = (int) ceil($totalSize / $partSize);
+            $batchNumber = (int)ceil($totalSize / $partSize);
 
             $splits = $this->splitFile($file, $partSize, $batchNumber);
 
@@ -562,7 +560,6 @@ class Cos implements GatewayApplicationInterface
         }
     }
 
-
     /**
      * 删除目录.
      *
@@ -668,7 +665,7 @@ class Cos implements GatewayApplicationInterface
     {
         $response = $this->client->getObjectAcl([
             'Bucket' => $this->bucket,
-            'Key'    => $path
+            'Key'    => $path,
         ]);
 
         $visibility = AdapterInterface::VISIBILITY_PRIVATE;
@@ -731,7 +728,7 @@ class Cos implements GatewayApplicationInterface
     {
         $result = $this->readObject($path);
 
-        $result['contents'] = (string)$result['Body'];
+        $result['contents'] = (string) $result['Body'];
         unset($result['Body']);
 
         return $result;
@@ -818,12 +815,12 @@ class Cos implements GatewayApplicationInterface
         $marker = '';
         $maxkeys = 1000;
         $options = [
-            'Bucket'    => $this->bucket,
-            'Marker'    => $marker,
-            'MaxKeys'   => $maxkeys,
+            'Bucket'  => $this->bucket,
+            'Marker'  => $marker,
+            'MaxKeys' => $maxkeys,
         ];
 
-        if($directory){
+        if ($directory) {
             $options['Prefix'] = $directory;
         }
 

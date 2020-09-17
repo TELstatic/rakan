@@ -67,11 +67,11 @@ class Qiniu implements GatewayApplicationInterface
         $mime = finfo_file($finfo, $file);
         finfo_close($finfo);
 
-        try{
+        try {
             $resumeUploader = new ResumeUploader(
                 $token,
                 $path,
-                fopen($file,'r'),
+                fopen($file, 'r'),
                 filesize($file),
                 $params = [],
                 $mime,
