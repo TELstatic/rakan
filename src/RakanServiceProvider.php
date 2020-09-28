@@ -12,7 +12,6 @@ use TELstatic\Rakan\Plugins\Policy;
 use TELstatic\Rakan\Plugins\Signature;
 use TELstatic\Rakan\Plugins\Symlink;
 use TELstatic\Rakan\Plugins\Verify;
-use TELstatic\Rakan\Plugins\MultiUpload;
 
 class RakanServiceProvider extends ServiceProvider
 {
