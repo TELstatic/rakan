@@ -201,7 +201,6 @@ class Cos implements GatewayApplicationInterface
                 $url = $this->host.$key.'?imageInfo';
 
                 $fileInfo = json_decode(file_get_contents($url), true);
-
             } else {
                 $fileInfo['width'] = 0;
                 $fileInfo['height'] = 0;
@@ -295,7 +294,7 @@ class Cos implements GatewayApplicationInterface
             $partSize = $options['partSize'];
 
             // 计算分块数
-            $batchNumber = (int)ceil($totalSize / $partSize);
+            $batchNumber = (int) ceil($totalSize / $partSize);
 
             $splits = $this->splitFile($file, $partSize, $batchNumber);
 
@@ -767,7 +766,7 @@ class Cos implements GatewayApplicationInterface
     {
         $result = $this->readObject($path);
 
-        $result['contents'] = (string)$result['Body'];
+        $result['contents'] = (string) $result['Body'];
         unset($result['Body']);
 
         return $result;
