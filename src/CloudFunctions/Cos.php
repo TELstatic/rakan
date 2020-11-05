@@ -4,6 +4,8 @@
  * User: Sakuraiyaya
  * Date: 2020/9/8
  * Time: 9:33.
+ *
+ * @deprecated
  */
 require 'cos-php-sdk-v5/vendor/autoload.php';
 
