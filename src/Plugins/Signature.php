@@ -14,8 +14,8 @@ class Signature extends AbstractPlugin
         return 'signature';
     }
 
-    public function handle()
+    public function handle($file)
     {
-        return $this->filesystem->getAdapter()->signature();
+        return $this->filesystem->getAdapter()->signature($file);
     }
 }
