@@ -33,7 +33,9 @@ class FileController extends BaseController
      */
     public function getFiles(Request $request)
     {
-        return Auth::guard($this->gurad)->user()->getFiles($request->get('pid', 0), $request->get('per_page', 50),
+        return Auth::guard($this->gurad)->user()->getFiles(
+            $request->get('pid', 0),
+            $request->get('per_page', 50),
             $request->get('keyword'));
     }
 

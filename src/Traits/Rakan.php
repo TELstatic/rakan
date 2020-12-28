@@ -60,8 +60,11 @@ trait Rakan
      */
     public function root()
     {
-        $hashids = new Hashids(config('rakan.hashids.salt'), config('rakan.hashids.length'),
-            config('rakan.hashids.alphabet'));
+        $hashids = new Hashids(
+            config('rakan.hashids.salt'),
+            config('rakan.hashids.length'),
+            config('rakan.hashids.alphabet')
+        );
 
         $root = $this->prefix ?? config('rakan.default.prefix').'/'.($this->module ?? config('rakan.default.module')).'/'.$hashids->encode($this->id);
 
@@ -158,9 +161,11 @@ trait Rakan
         if ($keyword) {
             $parent = $this->getRootFolder();
 
-            $children = $this->search()->where('target_id', $this->id)->where('name', 'like',
-                $keyword.'%')->orderBy('sort',
-                'desc')->paginate($per_page);
+            $children = $this->search()
+                ->where('target_id', $this->id)
+                ->where('name', 'like', $keyword.'%')
+                ->orderBy('sort', 'desc')
+                ->paginate($per_page);
         } else {
             $children = $this->search()->where(['pid' => $parent->id])->orderBy('sort', 'desc')->paginate($per_page);
         }
@@ -256,9 +261,18 @@ trait Rakan
             $this->id,
         ];
 
-        $folders = $this->search()->where($where)->where(['type' => 'folder'])->whereIn('id', $ids)->pluck('path');
-        $files = $this->search()->where($where)->where(['type' => 'file'])->whereIn('id',
-            $ids)->pluck('path')->toArray();
+        $folders = $this->search()
+            ->where($where)
+            ->where(['type' => 'folder'])
+            ->whereIn('id', $ids)
+            ->pluck('path');
+
+        $files = $this->search()
+            ->where($where)
+            ->where(['type' => 'file'])
+            ->whereIn('id', $ids)
+            ->pluck('path')
+            ->toArray();
 
         //检查目录下是否存在其他目录 或者 文件
         foreach ($folders as $folder) {
@@ -330,7 +344,10 @@ trait Rakan
 
             $folderInfo = pathinfo($folder->path);
             //目录移动
-            $files = $this->search()->where('type', 'file')->where('path', 'like', $folder->path.'%')->get();
+            $files = $this->search()
+                ->where('type', 'file')
+                ->where('path', 'like', $folder->path.'%')
+                ->get();
 
             foreach ($files as $file) {
                 $newFilePath = str_replace($folder->path, rtrim($folderInfo['dirname'], '/').'/'.$name, $file->path);
@@ -370,12 +387,21 @@ trait Rakan
      */
     public function copy($fileIds, $folderId)
     {
-        $files = $this->search()->where('target_id', $this->id)->where('type', 'file')->whereIn('id', $fileIds)->get();
+        $files = $this->search()
+            ->where('target_id', $this->id)
+            ->where('type', 'file')
+            ->whereIn('id', $fileIds)
+            ->get();
 
-        $folders = $this->search()->where('target_id', $this->id)->where('type', 'folder')->whereIn('id',
-            $fileIds)->get();
+        $folders = $this->search()
+            ->where('target_id', $this->id)
+            ->where('type', 'folder')
+            ->whereIn('id', $fileIds)
+            ->get();
 
-        $currentFolder = $this->search()->where('target_id', $this->id)->findOrFail($folderId);
+        $currentFolder = $this->search()
+            ->where('target_id', $this->id)
+            ->findOrFail($folderId);
 
         DB::transaction(function () use ($files, $folders, $currentFolder) {
             //文件复制
@@ -462,10 +488,17 @@ trait Rakan
      */
     public function cut($fileIds, $folderId)
     {
-        $files = $this->search()->where('target_id', $this->id)->where('type', 'file')->whereIn('id', $fileIds)->get();
+        $files = $this->search()
+            ->where('target_id', $this->id)
+            ->where('type', 'file')
+            ->whereIn('id', $fileIds)
+            ->get();
 
-        $folders = $this->search()->where('target_id', $this->id)->where('type', 'folder')->whereIn('id',
-            $fileIds)->get();
+        $folders = $this->search()
+            ->where('target_id', $this->id)
+            ->where('type', 'folder')
+            ->whereIn('id', $fileIds)
+            ->get();
 
         $currentFolder = $this->search()->where('target_id', $this->id)->findOrFail($folderId);
 
@@ -508,8 +541,11 @@ trait Rakan
                 foreach ($files as $file) {
                     $folderInfo = pathinfo($folder->path);
 
-                    $newFilePath = rtrim($currentFolder->path, '/').str_replace($folderInfo['dirname'], '',
-                            $file->path);
+                    $newFilePath = rtrim($currentFolder->path, '/').str_replace(
+                            $folderInfo['dirname'],
+                            '',
+                            $file->path
+                        );
 
                     //非同目录移动
                     if ($file->path !== $newFilePath) {

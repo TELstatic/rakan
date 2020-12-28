@@ -49,7 +49,7 @@ class RakanServiceProvider extends ServiceProvider
         $this->app->singleton('rakan.obs', function () {
             return Rakan::obs();
         });
-      
+
         $this->app->singleton('rakan.cos', function () {
             return Rakan::cos();
         });

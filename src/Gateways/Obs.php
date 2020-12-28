@@ -2,13 +2,12 @@
 
 namespace TELstatic\Rakan\Gateways;
 
-use Illuminate\Support\Facades\Log;
 use League\Flysystem\AdapterInterface;
 use League\Flysystem\Config;
 use League\Flysystem\Util;
+use Obs\ObsClient;
 use Obs\ObsException;
 use TELstatic\Rakan\Interfaces\GatewayApplicationInterface;
-use Obs\ObsClient;
 
 class Obs implements GatewayApplicationInterface
 {
@@ -76,7 +75,7 @@ class Obs implements GatewayApplicationInterface
             $uploadId = $res['UploadId'];
             $totalSize = filesize($file);
             $start = 0;
-            $batchNumber = (int)ceil($totalSize / $partSize);
+            $batchNumber = (int) ceil($totalSize / $partSize);
             $result = false;
 
             for ($i = 0; $i < $batchNumber; $i++) {
@@ -194,7 +193,7 @@ class Obs implements GatewayApplicationInterface
             $this->client->putObject([
                 'Bucket' => $this->bucket,
                 'Key'    => $path,
-                'Body'   => $contents
+                'Body'   => $contents,
             ]);
 
             return true;
@@ -254,7 +253,8 @@ class Obs implements GatewayApplicationInterface
                     [
                         'Bucket' => $this->bucket,
                         'Key'    => $path,
-                    ]);
+                    ]
+                );
 
                 return true;
             } catch (ObsException $e) {
@@ -274,7 +274,8 @@ class Obs implements GatewayApplicationInterface
                     [
                         'Bucket'  => $this->bucket,
                         'Objects' => $objects,
-                    ]);
+                    ]
+                );
 
                 return true;
             } catch (ObsException $e) {
@@ -329,9 +330,9 @@ class Obs implements GatewayApplicationInterface
         $result['dirname'] = Util::dirname($result['path']);
 
         if (isset($object['LastModified'])) {
-
             $result['timestamp'] = strtotime($object['LastModified']);
         }
+
         if (substr($result['path'], -1) === '/') {
             $result['type'] = 'dir';
             $result['path'] = rtrim($result['path'], '/');
@@ -362,6 +363,7 @@ class Obs implements GatewayApplicationInterface
             'Bucket' => $this->bucket,
             'Key'    => $path,
         ]);
+
         $object['size'] = $result['ContentLength'];
 
         return $object;
@@ -385,7 +387,8 @@ class Obs implements GatewayApplicationInterface
             [
                 'Bucket' => $this->bucket,
                 'Key'    => $path,
-            ]);
+            ]
+        );
 
         $object['timestamp'] = strtotime($result->toArray()['LastModified']);
 
@@ -399,7 +402,8 @@ class Obs implements GatewayApplicationInterface
                 [
                     'Bucket' => $this->bucket,
                     'Key'    => $path,
-                ]);
+                ]
+            );
 
             return true;
         } catch (ObsException $exception) {
@@ -416,7 +420,7 @@ class Obs implements GatewayApplicationInterface
 
         return [
             'type'     => 'file',
-            'contents' => (string)$result->toArray()['Body'],
+            'contents' => (string) $result->toArray()['Body'],
         ];
     }
 

@@ -45,7 +45,8 @@ class Oss implements GatewayApplicationInterface
 
         $sign = base64_encode(hash_hmac('sha1', $stringToSign, $this->secretKey, true));
 
-        $url = rtrim($this->host,'/').'/'.$file.'?OSSAccessKeyId='.$this->accessKey.'&Expires='.$expire.'&Signature='.urlencode($sign);
+        $url = rtrim($this->host,
+                '/').'/'.$file.'?OSSAccessKeyId='.$this->accessKey.'&Expires='.$expire.'&Signature='.urlencode($sign);
 
         return $url;
     }
