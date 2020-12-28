@@ -10,7 +10,7 @@ use League\Flysystem\Plugin\AbstractPlugin;
  *
  * @author TELstatic
  */
-class GetPath
+class GetPath extends AbstractPlugin
 {
     public function getMethod()
     {
