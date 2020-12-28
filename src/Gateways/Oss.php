@@ -459,7 +459,7 @@ class Oss implements GatewayApplicationInterface
     public function setVisibility($path, $visibility)
     {
         $acl = ($visibility === AdapterInterface::VISIBILITY_PUBLIC) ? 'public-read' : 'private';
-        $res = $this->client->putBucketAcl($this->bucket, $acl);
+        $res = $this->client->putObjectAcl($this->bucket, $path, $acl);
 
         if ($res) {
             return true;
