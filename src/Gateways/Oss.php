@@ -45,10 +45,9 @@ class Oss implements GatewayApplicationInterface
 
         $sign = base64_encode(hash_hmac('sha1', $stringToSign, $this->secretKey, true));
 
-        $url = rtrim($this->host,
-                '/').'/'.$file.'?OSSAccessKeyId='.$this->accessKey.'&Expires='.$expire.'&Signature='.urlencode($sign);
+        $host = rtrim($this->host, '/').'/';
 
-        return $url;
+        return $host.$file.'?OSSAccessKeyId='.$this->accessKey.'&Expires='.$expire.'&Signature='.urlencode($sign);
     }
 
     public function multiUpload(
@@ -584,7 +583,7 @@ class Oss implements GatewayApplicationInterface
     {
         $host = str_replace(['https:', 'http:'], '', rtrim($this->host, '/'));
 
-        $path = str_replace(['https:', 'http:'], '', rtrim($file, '/'));;
+        $path = str_replace(['https:', 'http:'], '', rtrim($file, '/'));
 
         return ltrim($path, $host);
     }
