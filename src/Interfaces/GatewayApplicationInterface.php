@@ -6,6 +6,8 @@ use League\Flysystem\Config;
 
 interface GatewayApplicationInterface
 {
+    public function getPath($file);
+
     public function signature($file);
 
     public function policy();

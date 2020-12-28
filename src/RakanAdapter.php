@@ -163,4 +163,8 @@ class RakanAdapter extends AbstractAdapter
         return app('rakan.'.$this->gateway)->config($this->config)->multiUpload($path, $file, $options);
     }
 
+    public function getPath($file)
+    {
+        return app('rakan.'.$this->gateway)->config($this->config)->getPath($file);
+    }
 }

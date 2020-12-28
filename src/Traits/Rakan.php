@@ -350,7 +350,11 @@ trait Rakan
                 ->get();
 
             foreach ($files as $file) {
-                $newFilePath = str_replace($folder->path, rtrim($folderInfo['dirname'], '/').'/'.$name, $file->path);
+                $newFilePath = str_replace(
+                    $folder->path,
+                    rtrim($folderInfo['dirname'], '/').'/'.$name,
+                    $file->path
+                );
 
                 //非同目录移动
                 if ($file->path !== $newFilePath) {
@@ -443,8 +447,12 @@ trait Rakan
                 foreach ($files as $file) {
                     $folderInfo = pathinfo($folder->path);
 
-                    $newFilePath = rtrim($currentFolder->path, '/').str_replace($folderInfo['dirname'], '',
-                            $file->path);
+                    $newFilePath = rtrim($currentFolder->path, '/').
+                        str_replace(
+                            $folderInfo['dirname'],
+                            '',
+                            $file->path
+                        );
 
                     //非同目录复制
                     if ($file->path !== $newFilePath) {
@@ -541,7 +549,8 @@ trait Rakan
                 foreach ($files as $file) {
                     $folderInfo = pathinfo($folder->path);
 
-                    $newFilePath = rtrim($currentFolder->path, '/').str_replace(
+                    $newFilePath = rtrim($currentFolder->path, '/').
+                        str_replace(
                             $folderInfo['dirname'],
                             '',
                             $file->path

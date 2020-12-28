@@ -7,6 +7,7 @@ use Illuminate\Support\ServiceProvider;
 use League\Flysystem\Filesystem;
 use TELstatic\Rakan\Plugins\Base64;
 use TELstatic\Rakan\Plugins\Config;
+use TELstatic\Rakan\Plugins\GetPath;
 use TELstatic\Rakan\Plugins\MultiUpload;
 use TELstatic\Rakan\Plugins\Policy;
 use TELstatic\Rakan\Plugins\Signature;
@@ -66,6 +67,7 @@ class RakanServiceProvider extends ServiceProvider
             $filesystem->addPlugin(new Symlink());
             $filesystem->addPlugin(new Config());
             $filesystem->addPlugin(new MultiUpload());
+            $filesystem->addPlugin(new GetPath());
 
             return $filesystem;
         });

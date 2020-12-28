@@ -66,6 +66,7 @@ class Obs implements GatewayApplicationInterface
         if ($partSize < 1024 * 100 || $partSize > 5 * 1024 * 1024 * 1024) {
             \Log::info('分割大小不在[100K,5G]范围之内');
         }
+
         try {
             $res = $this->client->initiateMultipartUpload([
                 'Bucket' => $this->bucket,
@@ -165,7 +166,6 @@ class Obs implements GatewayApplicationInterface
             $res = $this->client->createPostSignature([
                 'Bucket' => $this->bucket,
             ]);
-
         } catch (ObsException $obsException) {
             return false;
         }
@@ -442,5 +442,4 @@ class Obs implements GatewayApplicationInterface
     {
         return rtrim($this->host, '/').'/'.$path;
     }
-
 }
