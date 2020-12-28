@@ -3,11 +3,9 @@
 namespace TELstatic\Rakan\Plugins;
 
 use League\Flysystem\Plugin\AbstractPlugin;
-
 /**
- * 获取文件路径
+ * 获取文件路径.
  * @desc 获取文件路径
- * @package TELstatic\Rakan\Plugins
  * @author TELstatic
  */
 class GetPath
