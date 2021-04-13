@@ -381,4 +381,13 @@ class Qiniu implements GatewayApplicationInterface
     {
         throw new \Exception('qiniu does not support object acl');
     }
+
+    public function getPath($file)
+    {
+        $host = str_replace(['https:', 'http:'], '', rtrim($this->host, '/'));
+
+        $path = str_replace(['https:', 'http:'], '', rtrim($file, '/'));
+
+        return ltrim($path, $host);
+    }
 }

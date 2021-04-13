@@ -21,7 +21,7 @@ class FileController extends BaseController
 {
     public $guard;
 
-    public function __construct($guard)
+    public function __construct($guard = 'web')
     {
         $this->guard = $guard;
     }

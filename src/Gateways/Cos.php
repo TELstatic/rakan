@@ -991,4 +991,13 @@ class Cos implements GatewayApplicationInterface
 
         return $expiration.'Z';
     }
+
+    public function getPath($file)
+    {
+        $host = str_replace(['https:', 'http:'], '', rtrim($this->host, '/'));
+
+        $path = str_replace(['https:', 'http:'], '', rtrim($file, '/'));
+
+        return ltrim($path, $host);
+    }
 }

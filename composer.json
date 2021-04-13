@@ -1,7 +1,17 @@
 {
   "name": "telstatic/rakan",
-  "description": "Laravel 文件系统扩展,适配 阿里OSS,七牛云",
+  "description": "Laravel 文件系统扩展,适配 阿里云OSS,七牛云KODO,腾讯云COS,华为云OBS",
   "type": "library",
+  "keywords": [
+    "laravel",
+    "filesystem",
+    "oss",
+    "kodo",
+    "obs",
+    "cos",
+    "xayah",
+    "rakan"
+  ],
   "license": "MIT",
   "authors": [
     {
