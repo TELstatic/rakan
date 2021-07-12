@@ -75,8 +75,20 @@ trait Rakan
      * 获取Root目录.
      * 不存在则创建.
      */
-    public function getRootFolder()
+    public function getRootFolder($folder)
     {
+        if ($folder !== 'root') {
+            if ($defaultFolder = $this->search()
+                ->where('is_default', File::IS_DEFAULT_ACTIVATE)
+                ->where('module', $this->module ?? config('rakan.default.module'))
+                ->where('gateway', $this->gateway ?? config('rakan.default.gateway'))
+                ->where('target_id', $this->id)
+                ->first()
+            ) {
+                return $defaultFolder;
+            }
+        }
+
         $path = $this->root();
 
         $host = $this->config['host'] ?? config('rakan.gateways.'.($this->gateway ?? config('rakan.default.gateway')).'.host');
@@ -120,15 +132,13 @@ trait Rakan
             $path,
         ];
 
-        $files = $this->search()->where($where)->firstOrCreate($data, $data);
-
-        return $files;
+        return $this->search()->where($where)->firstOrCreate($data, $data);
     }
 
     /**
      * 获取文件及目录.
      */
-    public function getFiles($pid = 0, $per_page = 50, $keyword = null)
+    public function getFiles($pid = 0, $per_page = 50, $keyword = null, $folder = 'root')
     {
         $where = [];
 
@@ -143,12 +153,7 @@ trait Rakan
         ];
 
         if (!$pid) {
-            $where[] = [
-                'pid',
-                $pid,
-            ];
-
-            $parent = $this->getRootFolder();
+            $parent = $this->getRootFolder($folder);
         } else {
             $where[] = [
                 'id',
@@ -159,7 +164,7 @@ trait Rakan
         }
 
         if ($keyword) {
-            $parent = $this->getRootFolder();
+            $parent = $this->getRootFolder($folder);
 
             $children = $this->search()
                 ->where('target_id', $this->id)
@@ -167,15 +172,16 @@ trait Rakan
                 ->orderBy('sort', 'desc')
                 ->paginate($per_page);
         } else {
-            $children = $this->search()->where(['pid' => $parent->id])->orderBy('sort', 'desc')->paginate($per_page);
+            $children = $this->search()
+                ->where(['pid' => $parent->id])
+                ->orderBy('sort', 'desc')
+                ->paginate($per_page);
         }
 
-        $data = [
+        return [
             'parent'   => $parent,
             'children' => $children,
         ];
-
-        return $data;
     }
 
     /**
@@ -270,6 +276,7 @@ trait Rakan
         $files = $this->search()
             ->where($where)
             ->where(['type' => 'file'])
+            ->where('readonly', 0)
             ->whereIn('id', $ids)
             ->pluck('path')
             ->toArray();
@@ -295,7 +302,9 @@ trait Rakan
         $bool = $this->deleteObjects($files);
 
         if ($bool) {
-            $this->search()->whereIn('id', $ids)->delete();
+            $this->search()->whereIn('id', $ids)
+                ->where('readonly', 0)
+                ->delete();
 
             return [
                 'status' => 200,
@@ -640,9 +649,7 @@ trait Rakan
 
         array_pop($pathArr);
 
-        $childFolder = implode('/', $pathArr);
-
-        return $childFolder;
+        return implode('/', $pathArr);
     }
 
     /**
@@ -670,9 +677,7 @@ trait Rakan
             'type'      => 'folder',
         ];
 
-        $file = $this->search()->create($data);
-
-        return $file;
+        return $this->search()->create($data);
     }
 
     /**
@@ -732,5 +737,105 @@ trait Rakan
     public function decrementUseTimes($files, $step = 1)
     {
         return $this->search()->whereIn('path', $files)->decrement('use_times', $step);
+    }
+
+    /**
+     * 获取书签
+     * @desc 获取书签
+     * @param int $per_page
+     * @param null $keyword
+     * @return mixed
+     * @author TELstatic
+     * Date: 2021/5/8/0008
+     */
+    public function getBookmarks($per_page = 50, $keyword = null)
+    {
+        $builder = $this->search();
+
+        if ($keyword) {
+            $builder->where('name', 'like', $keyword.'%');
+        }
+
+        return $builder
+            ->where('target_id', $this->id)
+            ->whereNotNull('marked_at')
+            ->latest('marked_at', 'desc')
+            ->paginate($per_page);
+    }
+
+    /**
+     * 添加书签
+     * @desc 添加书签
+     * @param $id
+     * @return array
+     * @author TELstatic
+     * Date: 2021/5/8/0008
+     */
+    public function createBookmark($id)
+    {
+        $this->search()
+            ->where('target_id', $this->id)
+            ->where('id', $id)
+            ->update([
+                'marked_at' => now(),
+            ]);
+
+        return [
+            'status' => 200,
+            'msg'    => '书签添加成功',
+        ];
+    }
+
+    /**
+     * 删除书签
+     * @desc 删除书签
+     * @param $id
+     * @return array
+     * @author TELstatic
+     * Date: 2021/5/8/0008
+     */
+    public function deleteBookmark($id)
+    {
+        $this->search()
+            ->where('id', $id)
+            ->where('target_id', $this->id)
+            ->update([
+                'marked_at' => null,
+            ]);
+
+        return [
+            'status' => 200,
+            'msg'    => '书签删除成功',
+        ];
+    }
+
+    /**
+     * 设置默认目录
+     * @desc 设置默认目录
+     * @author TELstatic
+     * Date: 2021/5/8/0008
+     */
+    public function setDefaultFolder($id)
+    {
+        $this->search()
+            ->where('target_id', $this->id)
+            ->where('id', '<>', $id)
+            ->where('type', 'folder')
+            ->update([
+                'is_default' => File::IS_DEFAULT_DEACTIVATE,
+            ]);
+
+        $this->search()
+            ->where('target_id', $this->id)
+            ->where('id', $id)
+            ->where('type', 'folder')
+            ->update([
+                'is_default' => File::IS_DEFAULT_ACTIVATE,
+            ]);
+
+        return [
+            'status' => 200,
+            'msg'    => '默认目录设置成功',
+        ];
     }
 }

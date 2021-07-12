@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddColUseTimesToRakanFiles extends Migration
+class AddColReadonlyToRakanFiles extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,14 @@ class AddColUseTimesToRakanFiles extends Migration
      */
     public function up()
     {
+        if (Schema::hasColumns(config('rakan.default.table_name'), [
+            'readonly',
+        ])) {
+            return;
+        }
+
         Schema::table(config('rakan.default.table_name'), function (Blueprint $table) {
-            $table->integer('use_times', false, true)->default(0)->comment('图片引用次数');
+            $table->unsignedTinyInteger('readonly')->default(0);
         });
     }
 
@@ -25,8 +31,16 @@ class AddColUseTimesToRakanFiles extends Migration
      */
     public function down()
     {
+        if (!Schema::hasColumns(config('rakan.default.table_name'), [
+            'readonly',
+        ])) {
+            return;
+        }
+
         Schema::table(config('rakan.default.table_name'), function (Blueprint $table) {
-            $table->dropColumn('use_times');
+            $table->dropColumn([
+                'readonly',
+            ]);
         });
     }
 }

@@ -3,6 +3,7 @@
 namespace TELstatic\Rakan;
 
 use TELstatic\Rakan\Interfaces\GatewayApplicationInterface;
+use TELstatic\Rakan\Models\Rakan as File;
 
 class Rakan
 {

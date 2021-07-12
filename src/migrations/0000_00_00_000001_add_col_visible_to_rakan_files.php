@@ -25,6 +25,8 @@ class AddColVisibleToRakanFiles extends Migration
      */
     public function down()
     {
-        Schema::dropColumn('visible');
+        Schema::table(config('rakan.default.table_name'), function (Blueprint $table) {
+            $table->dropColumn('visible');
+        });
     }
 }

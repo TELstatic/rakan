@@ -14,6 +14,14 @@ class Rakan extends Model
         $this->setTable(config('rakan.default.table_name'));
     }
 
+    const IS_DEFAULT_DEACTIVATE = 0;
+    const IS_DEFAULT_ACTIVATE = 1;
+
+    public static $isDefaultMap = [
+        self::IS_DEFAULT_ACTIVATE   => '默认',
+        self::IS_DEFAULT_DEACTIVATE => '非默认',
+    ];
+
     const RAKAN_ACL_TYPE_PRIVATE = 0;
     const RAKAN_ACL_TYPE_PUBLIC_READ = 1;
     const RAKAN_ACL_TYPE_PUBLIC_READ_WRITE = 2;

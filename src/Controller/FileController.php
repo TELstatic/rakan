@@ -19,12 +19,7 @@ use Illuminate\Support\Facades\Auth;
  */
 class FileController extends BaseController
 {
-    public $guard;
-
-    public function __construct($guard = 'web')
-    {
-        $this->guard = $guard;
-    }
+    public $guard = 'web';
 
     /**
      * 获取文件目录列表.
@@ -33,7 +28,7 @@ class FileController extends BaseController
      */
     public function getFiles(Request $request)
     {
-        return Auth::guard($this->gurad)->user()->getFiles(
+        return Auth::guard($this->guard)->user()->getFiles(
             $request->get('pid', 0),
             $request->get('per_page', 50),
             $request->get('keyword')
