@@ -5,6 +5,7 @@ namespace TELstatic\Rakan\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use TELstatic\Rakan\Models\Rakan as File;
 
 class RakanController extends BaseController
@@ -22,6 +23,33 @@ class RakanController extends BaseController
         //非本地环境验证 合法性
         if (config('app.env') === 'production') {
             Storage::disk($gateway)->verify();
+        }
+
+        // BUG 用户A 伪造表单 上传文件 至 用户B 目录下
+        $fileInfo = pathinfo($request->get('filename'));
+
+        $folder = $this->getParentFolder($fileInfo['dirname'], $gateway);
+
+        $file = $this->generateFile($request, $fileInfo['basename'], $gateway, $folder);
+
+        return response()->json([
+            'status' => $file ? 200 : 500,
+            'url'    => $file->url,
+        ]);
+    }
+
+    public function notice(Request $request, $gateway, $bucket = null)
+    {
+        //非本地环境验证 合法性
+        if (config('app.env') === 'production') {
+            Storage::disk($gateway)->verify();
+        }
+
+        if (!Str::startsWith($request->get('key'), 'rakan') && $gateway === 'cos') {
+            return response()->json([
+                'status' => 200,
+                'url'    => $request->get('key'),
+            ]);
         }
 
         // BUG 用户A 伪造表单 上传文件 至 用户B 目录下

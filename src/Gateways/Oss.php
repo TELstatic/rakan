@@ -93,11 +93,21 @@ class Oss implements GatewayApplicationInterface
         ];
         $conditions[] = $condition;
 
-        $start = [
-            'starts-with',
-            '$key',
-            '/',
+        $conditions[] = [
+            'eq',
+            '$bucket',
+            $this->bucket,
         ];
+
+        $request = request();
+
+        if ($request->filled('key')) {
+            $conditions[] = [
+                'starts-with',
+                '$key',
+                $request->get('key'),
+            ];
+        }
 
         //todo
 //        $conditions[] = $start;

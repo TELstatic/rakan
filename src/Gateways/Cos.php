@@ -91,8 +91,10 @@ class Cos implements GatewayApplicationInterface
         return $authorization;
     }
 
-    public function policy($route = 'rakan.callback')
+    public function policy($route = 'rakan.notice')
     {
+        $callbackUrl = route($route, ['gateway' => 'cos', 'bucket' => $this->bucket]);
+
         $now = time();
         $expire = $this->expire;
         $end = $now + $expire;
@@ -108,6 +110,30 @@ class Cos implements GatewayApplicationInterface
         ];
 
         $conditions[] = $condition;
+
+        $conditions[] = [
+            'eq',
+            '$bucket',
+            $this->bucket,
+        ];
+
+        $request = request();
+
+        if ($request->filled('key')) {
+            $conditions[] = [
+                'starts-with',
+                '$key',
+                $request->get('key'),
+            ];
+        }
+
+        if (config('app.env') === 'production') {
+            $conditions[] = [
+                'eq',
+                '$success_action_redirect',
+                $callbackUrl,
+            ];
+        }
 
         $conditions[] = [
             'eq',
@@ -136,9 +162,9 @@ class Cos implements GatewayApplicationInterface
 
         $policy = json_encode($arr);
 
-        $string_to_sign = sha1($policy);
+        $stringToSign = sha1($policy);
 
-        $signature = hash_hmac('sha1', $string_to_sign, $signKey);
+        $signature = hash_hmac('sha1', $stringToSign, $signKey);
 
         $response = [];
 
@@ -149,6 +175,10 @@ class Cos implements GatewayApplicationInterface
         $response['data']['q-signature'] = $signature;
         $response['data']['key'] = '';
 
+        if (config('app.env') === 'production') {
+            $response['data']['success_action_redirect'] = $callbackUrl;
+        }
+
         $response['expire'] = $expire;
         $response['expire_at'] = date('Y-m-d H:i:s', time() + $expire);
 
@@ -158,23 +188,31 @@ class Cos implements GatewayApplicationInterface
     public function verify()
     {
         try {
-            $data = [
-                'key'      => $_POST['key'],
-                'filename' => $_POST['key'],
-                'size'     => $_POST['size'],
-                'mimeType' => $_POST['mimeType'],
-                'width'    => $_POST['width'],
-                'height'   => $_POST['height'],
-            ];
+            $key = '/'.ltrim($_GET['key'], '/');
 
-            ksort($data);
+            $result = $this->client->headObject([
+                'Bucket' => $_GET['bucket'],
+                'Key'    => $_GET['key'],
+            ]);
 
-            $sign = md5(http_build_query($data).'&secretkey='.$this->secretKey);
+            $bool = exif_imagetype($this->host.$key);
 
-            if ($sign !== $_POST['sign']) {
-                header('http/1.1 403 Forbidden');
-                exit();
+            if ($bool) {
+                $url = $this->host.$key.'?imageInfo';
+
+                $fileInfo = json_decode(file_get_contents($url), true);
+            } else {
+                $fileInfo['width'] = 0;
+                $fileInfo['height'] = 0;
             }
+
+            $request = request();
+
+            $request->offsetSet('filename', $_GET['key']);
+            $request->offsetSet('size', $result['ContentLength']);
+            $request->offsetSet('mimeType', $result['ContentType']);
+            $request->offsetSet('width', $fileInfo['width']);
+            $request->offsetSet('height', $fileInfo['height']);
 
             return true;
         } catch (\Exception $exception) {
